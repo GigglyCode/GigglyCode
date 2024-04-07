@@ -1,6 +1,6 @@
 compiler = cl
 exec = gigly.exe
-sources = $(wildcard src/*.c)
+sources = $(wildcard src/*.cpp)
 include = "src/include"
 
 $(exec): $(sources)
