@@ -7,7 +7,7 @@ The goal of this programming language is to allow inter-operability between lang
 # Syntax
 Syntax is very similar to Python's, except for using curly braces instead of indentation.
 This example should give a taste on what it should look like:
-```
+```python
 def fizzbuzz(start, stop, step) {
   for i in range(start, stop, step) {
     if i % 15 == 0 {
@@ -22,16 +22,3 @@ def fizzbuzz(start, stop, step) {
   }
 }
 ```
-To use the very novel feature of GigglyCode called "inlining", start with `#inline` directive and end with `#end`. For example:
-```
-#inline python 3.12 exports add
-
-def add(a, b):
-  return a + b
-
-#end
-
-print(add(1, 2)) // 3
-```
-
-`<WIP>`
