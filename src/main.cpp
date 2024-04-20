@@ -1,5 +1,7 @@
 #include "include/lexer.hpp"
 
+const bool DEBUG_LEXER = true;
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -19,7 +21,15 @@ int main(int argc, char *argv[])
 
     std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-    std::cout << "File content: \"" << fileContent << "\"\n";
+    if (DEBUG_LEXER)
+    {
+        Lexer debugLexer = fileContent;
+        do
+        {
+            Token *token = debugLexer.nextToken();
+            token->print();
+        } while (debugLexer.currentChar != "\0");
+    }
 
     return 0;
 }
