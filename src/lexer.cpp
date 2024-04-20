@@ -13,18 +13,18 @@ std::string tokenTypeString(TokenType type)
         return "INT";
     case FLOAT:
         return "FLOAT";
-    case ADD:
-        return "ADD";
-    case SUB:
-        return "SUB";
-    case MUL:
-        return "MUL";
-    case DIV:
-        return "DIV";
-    case MOD:
-        return "MOD";
-    case POW:
-        return "POW";
+    case PLUS:
+        return "PLUS";
+    case MINUS:
+        return "MINUS";
+    case ASTERISK:
+        return "ASTERISK";
+    case FSLASH:
+        return "FSLASH";
+    case PERCENT:
+        return "PERCENT";
+    case CARET:
+        return "CARET";
     case LPAREN:
         return "LPAREN";
     case RPAREN:
@@ -79,27 +79,27 @@ Token *Lexer::nextToken()
 
     if (this->currentChar == "+")
     {
-        token = this->_newToken(ADD, this->currentChar);
+        token = this->_newToken(PLUS, this->currentChar);
     }
     else if (this->currentChar == "-")
     {
-        token = this->_newToken(SUB, this->currentChar);
+        token = this->_newToken(MINUS, this->currentChar);
     }
     else if (this->currentChar == "*")
     {
-        token = this->_newToken(MUL, this->currentChar);
+        token = this->_newToken(ASTERISK, this->currentChar);
     }
     else if (this->currentChar == "/")
     {
-        token = this->_newToken(DIV, this->currentChar);
+        token = this->_newToken(FSLASH, this->currentChar);
     }
     else if (this->currentChar == "%")
     {
-        token = this->_newToken(MOD, this->currentChar);
+        token = this->_newToken(PERCENT, this->currentChar);
     }
     else if (this->currentChar == "^")
     {
-        token = this->_newToken(POW, this->currentChar);
+        token = this->_newToken(CARET, this->currentChar);
     }
     else if (this->currentChar == "(")
     {
