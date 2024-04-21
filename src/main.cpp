@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
         {
             Token *token = debugLexer.nextToken();
             token->print();
+            delete token;
         } while (debugLexer.currentChar != "\0");
     }
 
