@@ -5,35 +5,37 @@ std::string Token::toString()
     return "Token{type: " + tokenTypeString(type) + ", literal: \"" + literal + "\", line_no: " + std::to_string(line_no) + ", col_no: " + std::to_string(col_no) + "}";
 }
 
+Token::Token(){};
+
 std::string tokenTypeString(TokenType type)
 {
     switch (type)
     {
-    case INT:
+    case TokenType::INT:
         return "INT";
-    case FLOAT:
+    case TokenType::FLOAT:
         return "FLOAT";
-    case PLUS:
+    case TokenType::PLUS:
         return "PLUS";
-    case MINUS:
+    case TokenType::MINUS:
         return "MINUS";
-    case ASTERISK:
+    case TokenType::ASTERISK:
         return "ASTERISK";
-    case FSLASH:
+    case TokenType::FSLASH:
         return "FSLASH";
-    case PERCENT:
+    case TokenType::PERCENT:
         return "PERCENT";
-    case CARET:
+    case TokenType::CARET:
         return "CARET";
-    case LPAREN:
+    case TokenType::LPAREN:
         return "LPAREN";
-    case RPAREN:
+    case TokenType::RPAREN:
         return "RPAREN";
-    case SEMICOLON:
+    case TokenType::SEMICOLON:
         return "SEMICOLON";
-    case ILLEGAL:
+    case TokenType::ILLEGAL:
         return "ILLEGAL";
-    case END:
+    case TokenType::END:
         return "END";
     default:
         return "";
@@ -83,39 +85,39 @@ Token *Lexer::nextToken()
     }
     else if (this->currentChar == "-")
     {
-        token = this->_newToken(MINUS, this->currentChar);
+        token = this->_newToken(TokenType::MINUS, this->currentChar);
     }
     else if (this->currentChar == "*")
     {
-        token = this->_newToken(ASTERISK, this->currentChar);
+        token = this->_newToken(TokenType::ASTERISK, this->currentChar);
     }
     else if (this->currentChar == "/")
     {
-        token = this->_newToken(FSLASH, this->currentChar);
+        token = this->_newToken(TokenType::FSLASH, this->currentChar);
     }
     else if (this->currentChar == "%")
     {
-        token = this->_newToken(PERCENT, this->currentChar);
+        token = this->_newToken(TokenType::PERCENT, this->currentChar);
     }
     else if (this->currentChar == "^")
     {
-        token = this->_newToken(CARET, this->currentChar);
+        token = this->_newToken(TokenType::CARET, this->currentChar);
     }
     else if (this->currentChar == "(")
     {
-        token = this->_newToken(LPAREN, this->currentChar);
+        token = this->_newToken(TokenType::LPAREN, this->currentChar);
     }
     else if (this->currentChar == ")")
     {
-        token = this->_newToken(RPAREN, this->currentChar);
+        token = this->_newToken(TokenType::RPAREN, this->currentChar);
     }
     else if (this->currentChar == ";")
     {
-        token = this->_newToken(SEMICOLON, this->currentChar);
+        token = this->_newToken(TokenType::SEMICOLON, this->currentChar);
     }
     else if (this->currentChar == "\0")
     {
-        token = this->_newToken(END, "");
+        token = this->_newToken(TokenType::END, "");
     }
     else
     {
@@ -126,7 +128,7 @@ Token *Lexer::nextToken()
         }
         else
         {
-            token = this->_newToken(ILLEGAL, this->currentChar);
+            token = this->_newToken(TokenType::ILLEGAL, this->currentChar);
         }
     }
     this->_readChar();
@@ -151,7 +153,7 @@ Token *Lexer::_readNumber()
             if (dot_count > 1)
             {
                 printf("Invalid number at line %d, column %d\n", this->lineNo, this->pos);
-                return this->_newToken(ILLEGAL, this->currentChar);
+                return this->_newToken(TokenType::ILLEGAL, this->currentChar);
             }
         }
         number += this->currentChar;
@@ -161,9 +163,9 @@ Token *Lexer::_readNumber()
     }
     if (dot_count == 0)
     {
-        return this->_newToken(INT, number);
+        return this->_newToken(TokenType::INT, number);
     }
-    return this->_newToken(FLOAT, number);
+    return this->_newToken(TokenType::FLOAT, number);
 };
 
 void Lexer::_skipWhitespace()
