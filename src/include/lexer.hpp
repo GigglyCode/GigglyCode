@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <functional>
+#include <memory>
 #pragma once
 
 enum TokenType
@@ -21,6 +22,7 @@ enum TokenType
     ILLEGAL,
     END
 };
+
 std::string tokenTypeString(TokenType type);
 
 class Token
@@ -36,7 +38,7 @@ public:
 
     Token(TokenType type, int line_no, int col_no)
         : type(type), literal(""), line_no(line_no), col_no(col_no){};
-
+    Token();
     std::string toString();
     void print();
 };
