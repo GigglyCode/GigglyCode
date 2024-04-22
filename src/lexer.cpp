@@ -73,9 +73,9 @@ void Lexer::_readChar()
     this->readPos++;
 };
 
-Token *Lexer::nextToken()
+std::shared_ptr<Token> Lexer::nextToken()
 {
-    Token *token;
+    std::shared_ptr<Token> token;
 
     this->_skipWhitespace();
 
@@ -135,12 +135,12 @@ Token *Lexer::nextToken()
     return token;
 }
 
-Token *Lexer::_newToken(TokenType type, std::string currentChar)
+std::shared_ptr<Token> Lexer::_newToken(TokenType type, std::string currentChar)
 {
-    return new Token(type, currentChar, this->lineNo, this->pos);
+    return std::make_shared<Token>(type, currentChar, this->lineNo, this->pos);
 }
 
-Token *Lexer::_readNumber()
+std::shared_ptr<Token> Lexer::_readNumber()
 {
     int st = this->pos;
     int dot_count = 0;
