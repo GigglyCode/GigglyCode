@@ -1,11 +1,11 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <functional>
 #include <memory>
-#pragma once
 
-enum TokenType
+enum class TokenType
 {
     INT,
     FLOAT,
@@ -52,12 +52,12 @@ public:
     int lineNo;
     std::string currentChar;
     Lexer(std::string source);
-    Token *nextToken();
+    std::shared_ptr<Token> nextToken();
 
 private:
     void _readChar();
     void _skipWhitespace();
-    Token *_newToken(TokenType type, std::string currentChar);
-    Token *_readNumber();
+    std::shared_ptr<Token> _newToken(TokenType type, std::string currentChar);
+    std::shared_ptr<Token> _readNumber();
     bool _isDigit(std::string character);
 };
