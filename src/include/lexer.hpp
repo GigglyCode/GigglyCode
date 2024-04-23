@@ -1,11 +1,12 @@
-#pragma once
+#ifndef LEXER_HPP
+#define LEXER_HPP
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <functional>
 #include <memory>
 
-enum class TokenType
+enum class tokenType
 {
     INT,
     FLOAT,
@@ -23,20 +24,20 @@ enum class TokenType
     END
 };
 
-std::string tokenTypeString(TokenType type);
+std::string tokenTypeString(tokenType type);
 
 class Token
 {
 public:
-    TokenType type;
+    tokenType type;
     std::string literal;
     int line_no;
     int col_no;
 
-    Token(TokenType type, std::string literal, int line_no, int col_no)
+    Token(tokenType type, std::string literal, int line_no, int col_no)
         : type(type), literal(literal), line_no(line_no), col_no(col_no){};
 
-    Token(TokenType type, int line_no, int col_no)
+    Token(tokenType type, int line_no, int col_no)
         : type(type), literal(""), line_no(line_no), col_no(col_no){};
     Token();
     std::string toString();
@@ -48,8 +49,8 @@ class Lexer
 public:
     std::string source;
     int pos;
-    int readPos;
-    int lineNo;
+    unsigned int readPos;
+    unsigned int lineNo;
     std::string currentChar;
     Lexer(std::string source);
     std::shared_ptr<Token> nextToken();
@@ -57,7 +58,8 @@ public:
 private:
     void _readChar();
     void _skipWhitespace();
-    std::shared_ptr<Token> _newToken(TokenType type, std::string currentChar);
+    std::shared_ptr<Token> _newToken(tokenType type, std::string currentChar);
     std::shared_ptr<Token> _readNumber();
     bool _isDigit(std::string character);
 };
+#endif
