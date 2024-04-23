@@ -7,35 +7,35 @@ std::string Token::toString()
 
 Token::Token(){};
 
-std::string tokenTypeString(TokenType type)
+std::string tokenTypeString(tokenType type)
 {
     switch (type)
     {
-    case TokenType::INT:
+    case tokenType::INT:
         return "INT";
-    case TokenType::FLOAT:
+    case tokenType::FLOAT:
         return "FLOAT";
-    case TokenType::PLUS:
+    case tokenType::PLUS:
         return "PLUS";
-    case TokenType::MINUS:
+    case tokenType::MINUS:
         return "MINUS";
-    case TokenType::ASTERISK:
+    case tokenType::ASTERISK:
         return "ASTERISK";
-    case TokenType::FSLASH:
+    case tokenType::FSLASH:
         return "FSLASH";
-    case TokenType::PERCENT:
+    case tokenType::PERCENT:
         return "PERCENT";
-    case TokenType::CARET:
+    case tokenType::CARET:
         return "CARET";
-    case TokenType::LPAREN:
+    case tokenType::LPAREN:
         return "LPAREN";
-    case TokenType::RPAREN:
+    case tokenType::RPAREN:
         return "RPAREN";
-    case TokenType::SEMICOLON:
+    case tokenType::SEMICOLON:
         return "SEMICOLON";
-    case TokenType::ILLEGAL:
+    case tokenType::ILLEGAL:
         return "ILLEGAL";
-    case TokenType::END:
+    case tokenType::END:
         return "END";
     default:
         return "";
@@ -81,43 +81,43 @@ std::shared_ptr<Token> Lexer::nextToken()
 
     if (this->currentChar == "+")
     {
-        token = this->_newToken(PLUS, this->currentChar);
+        token = this->_newToken(tokenType::PLUS, this->currentChar);
     }
     else if (this->currentChar == "-")
     {
-        token = this->_newToken(TokenType::MINUS, this->currentChar);
+        token = this->_newToken(tokenType::MINUS, this->currentChar);
     }
     else if (this->currentChar == "*")
     {
-        token = this->_newToken(TokenType::ASTERISK, this->currentChar);
+        token = this->_newToken(tokenType::ASTERISK, this->currentChar);
     }
     else if (this->currentChar == "/")
     {
-        token = this->_newToken(TokenType::FSLASH, this->currentChar);
+        token = this->_newToken(tokenType::FSLASH, this->currentChar);
     }
     else if (this->currentChar == "%")
     {
-        token = this->_newToken(TokenType::PERCENT, this->currentChar);
+        token = this->_newToken(tokenType::PERCENT, this->currentChar);
     }
     else if (this->currentChar == "^")
     {
-        token = this->_newToken(TokenType::CARET, this->currentChar);
+        token = this->_newToken(tokenType::CARET, this->currentChar);
     }
     else if (this->currentChar == "(")
     {
-        token = this->_newToken(TokenType::LPAREN, this->currentChar);
+        token = this->_newToken(tokenType::LPAREN, this->currentChar);
     }
     else if (this->currentChar == ")")
     {
-        token = this->_newToken(TokenType::RPAREN, this->currentChar);
+        token = this->_newToken(tokenType::RPAREN, this->currentChar);
     }
     else if (this->currentChar == ";")
     {
-        token = this->_newToken(TokenType::SEMICOLON, this->currentChar);
+        token = this->_newToken(tokenType::SEMICOLON, this->currentChar);
     }
     else if (this->currentChar == "\0")
     {
-        token = this->_newToken(TokenType::END, "");
+        token = this->_newToken(tokenType::END, "");
     }
     else
     {
@@ -128,21 +128,20 @@ std::shared_ptr<Token> Lexer::nextToken()
         }
         else
         {
-            token = this->_newToken(TokenType::ILLEGAL, this->currentChar);
+            token = this->_newToken(tokenType::ILLEGAL, this->currentChar);
         }
     }
     this->_readChar();
     return token;
 }
 
-std::shared_ptr<Token> Lexer::_newToken(TokenType type, std::string currentChar)
+std::shared_ptr<Token> Lexer::_newToken(tokenType type, std::string currentChar)
 {
     return std::make_shared<Token>(type, currentChar, this->lineNo, this->pos);
 }
 
 std::shared_ptr<Token> Lexer::_readNumber()
 {
-    int st = this->pos;
     int dot_count = 0;
     std::string number = "";
     while (this->_isDigit(this->currentChar) || this->currentChar == ".")
@@ -153,7 +152,7 @@ std::shared_ptr<Token> Lexer::_readNumber()
             if (dot_count > 1)
             {
                 printf("Invalid number at line %d, column %d\n", this->lineNo, this->pos);
-                return this->_newToken(TokenType::ILLEGAL, this->currentChar);
+                return this->_newToken(tokenType::ILLEGAL, this->currentChar);
             }
         }
         number += this->currentChar;
@@ -163,9 +162,9 @@ std::shared_ptr<Token> Lexer::_readNumber()
     }
     if (dot_count == 0)
     {
-        return this->_newToken(TokenType::INT, number);
+        return this->_newToken(tokenType::INT, number);
     }
-    return this->_newToken(TokenType::FLOAT, number);
+    return this->_newToken(tokenType::FLOAT, number);
 };
 
 void Lexer::_skipWhitespace()
