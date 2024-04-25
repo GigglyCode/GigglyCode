@@ -1,6 +1,9 @@
+#include <fstream>
 #include "include/lexer.hpp"
+#include "include/parser.hpp"
 
-const bool DEBUG_LEXER = true;
+const bool DEBUG_LEXER = false;
+const bool DEBUG_PARSER = true;
 
 int main(int argc, char *argv[])
 {
@@ -23,14 +26,25 @@ int main(int argc, char *argv[])
 
     if (DEBUG_LEXER)
     {
+        std::cout << "=========== Lexer Debug =========== \n";
         Lexer debugLexer = fileContent;
         do
         {
-            Token *token = debugLexer.nextToken();
+            std::shared_ptr<Token> token(debugLexer.nextToken());
             token->print();
-            delete token;
         } while (debugLexer.currentChar != "\0");
     }
-
+    std::shared_ptr<Lexer> l = std::make_shared<Lexer>(fileContent);
+    Parser p = Parser(l);
+    if (DEBUG_PARSER)
+    {
+        std::cout << "=========== Parser Debug =========== \n";
+        std::shared_ptr<AST::Program> program = p.parseProgram();
+        auto json = program->toJson();
+        std::ofstream outputFile(".\\dump\\parser.json");
+        outputFile << json->dump(4) << std::endl;
+        outputFile.close();
+        std::cout << "Json dumped to output.json" << std::endl;
+    }
     return 0;
 }
