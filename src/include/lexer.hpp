@@ -8,21 +8,36 @@
 
 enum class tokenType
 {
+    // Special Tokens
+    ILLEGAL,
+    END,
+
+    // Data Types
+    IDENT,
     INT,
     FLOAT,
+
+    // Arthematic Operator
     PLUS,
     MINUS,
     ASTERISK,
-    FSLASH,
-    BSLASH,
     PERCENT,
     CARET,
+    FSLASH,
+    BSLASH,
+
+    // Symbols
     LPAREN,
     RPAREN,
+    COLON,
     SEMICOLON,
-    ILLEGAL,
-    END
+    EQUALS,
+
+    // Keywords
+    LET,
 };
+
+tokenType lookupIdent(std::string ident);
 
 std::string tokenTypeString(tokenType type);
 
@@ -34,12 +49,11 @@ public:
     int line_no;
     int col_no;
 
+    Token(){};
+    Token(tokenType type, int line_no, int col_no)
+        : type(type), line_no(line_no), col_no(col_no){};
     Token(tokenType type, std::string literal, int line_no, int col_no)
         : type(type), literal(literal), line_no(line_no), col_no(col_no){};
-
-    Token(tokenType type, int line_no, int col_no)
-        : type(type), literal(""), line_no(line_no), col_no(col_no){};
-    Token();
     std::string toString();
     void print();
 };
@@ -61,5 +75,7 @@ private:
     std::shared_ptr<Token> _newToken(tokenType type, std::string currentChar);
     std::shared_ptr<Token> _readNumber();
     bool _isDigit(std::string character);
+    bool _isLetter(std::string character);
+    std::shared_ptr<std::string> _readIdentifier();
 };
 #endif
