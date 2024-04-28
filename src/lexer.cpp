@@ -1,16 +1,55 @@
+#include <unordered_map>
+#include <iomanip>
 #include "include/lexer.hpp"
+
+const std::unordered_map<std::string, tokenType> KEYWORDS = {
+    {"let", tokenType::LET},
+};
+
+tokenType lookupIdent(std::shared_ptr<std::string> ident)
+{
+    auto it = KEYWORDS.find(*ident);
+    if (it != KEYWORDS.end())
+    {
+        return it->second;
+    }
+    return tokenType::IDENT;
+}
 
 std::string Token::toString()
 {
-    return "Token{type: " + tokenTypeString(type) + ", literal: \"" + literal + "\", line_no: " + std::to_string(line_no) + ", col_no: " + std::to_string(col_no) + "}";
-}
+    // Define ANSI escape codes for colors
+    static const std::string colorReset = "\x1b[0m";
+    static const std::string colorBlue = "\x1b[34m";
+    static const std::string colorYellow = "\x1b[33m";
+    static const std::string colorGreen = "\x1b[32m";
+    static const std::string colorMagenta = "\x1b[35m";
 
-Token::Token(){};
+    // Convert variables to strings
+    std::string typeString = tokenTypeString(type);
+    std::string literalString = "\"" + literal + "\"";
+    std::string lineNoString = std::to_string(line_no);
+    std::string colNoString = std::to_string(col_no);
+
+    // Apply padding to each field for alignment
+    typeString += std::string(10 - typeString.length(), ' ');
+    literalString += std::string(5 - literalString.length(), ' ');
+    lineNoString += std::string(2 - lineNoString.length(), ' ');
+    colNoString += std::string(2 - colNoString.length(), ' ');
+
+    // Construct the formatted string with colors
+    return "Token{type: " + colorBlue + typeString + colorReset +
+           ", literal: " + colorYellow + literalString + colorReset +
+           ", line_no: " + colorGreen + lineNoString + colorReset +
+           ", col_no: " + colorMagenta + colNoString + colorReset + "}";
+}
 
 std::string tokenTypeString(tokenType type)
 {
     switch (type)
     {
+    case tokenType::IDENT:
+        return "IDENT";
     case tokenType::INT:
         return "INT";
     case tokenType::FLOAT:
@@ -21,22 +60,30 @@ std::string tokenTypeString(tokenType type)
         return "MINUS";
     case tokenType::ASTERISK:
         return "ASTERISK";
-    case tokenType::FSLASH:
-        return "FSLASH";
     case tokenType::PERCENT:
         return "PERCENT";
     case tokenType::CARET:
         return "CARET";
+    case tokenType::FSLASH:
+        return "FSLASH";
+    case tokenType::BSLASH:
+        return "BSLASH";
     case tokenType::LPAREN:
         return "LPAREN";
     case tokenType::RPAREN:
         return "RPAREN";
+    case tokenType::COLON:
+        return "COLON";
     case tokenType::SEMICOLON:
         return "SEMICOLON";
+    case tokenType::EQUALS:
+        return "EQUALS";
     case tokenType::ILLEGAL:
         return "ILLEGAL";
     case tokenType::END:
         return "END";
+    case tokenType::LET:
+        return "LET";
     default:
         return "";
     }
@@ -103,6 +150,10 @@ std::shared_ptr<Token> Lexer::nextToken()
     {
         token = this->_newToken(tokenType::CARET, this->currentChar);
     }
+    else if (this->currentChar == "=")
+    {
+        token = this->_newToken(tokenType::EQUALS, this->currentChar);
+    }
     else if (this->currentChar == "(")
     {
         token = this->_newToken(tokenType::LPAREN, this->currentChar);
@@ -110,6 +161,10 @@ std::shared_ptr<Token> Lexer::nextToken()
     else if (this->currentChar == ")")
     {
         token = this->_newToken(tokenType::RPAREN, this->currentChar);
+    }
+    else if (this->currentChar == ":")
+    {
+        token = this->_newToken(tokenType::COLON, this->currentChar);
     }
     else if (this->currentChar == ";")
     {
@@ -121,7 +176,13 @@ std::shared_ptr<Token> Lexer::nextToken()
     }
     else
     {
-        if (this->_isDigit(this->currentChar))
+        if (this->_isLetter(this->currentChar))
+        {
+            std::shared_ptr<std::string> ident = this->_readIdentifier();
+            token = this->_newToken(lookupIdent(ident), *ident);
+            return token;
+        }
+        else if (this->_isDigit(this->currentChar))
         {
             token = this->_readNumber();
             return token;
@@ -167,6 +228,17 @@ std::shared_ptr<Token> Lexer::_readNumber()
     return this->_newToken(tokenType::FLOAT, number);
 };
 
+std::shared_ptr<std::string> Lexer::_readIdentifier()
+{
+    std::string identifier = "";
+    while (this->_isLetter(this->currentChar) || this->_isDigit(this->currentChar))
+    {
+        identifier += this->currentChar;
+        this->_readChar();
+    };
+    return std::make_shared<std::string>(identifier);
+}
+
 void Lexer::_skipWhitespace()
 {
     while (this->currentChar == " " || this->currentChar == "\t" || this->currentChar == "\n" || this->currentChar == "\r")
@@ -183,4 +255,9 @@ void Lexer::_skipWhitespace()
 bool Lexer::_isDigit(std::string character)
 {
     return character >= "0" && character <= "9";
+};
+
+bool Lexer::_isLetter(std::string character)
+{
+    return (character >= "a" && character <= "z") || (character >= "A" && character <= "Z") || character == "_";
 };
