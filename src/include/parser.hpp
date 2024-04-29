@@ -46,6 +46,7 @@ public:
 private:
     void _nextToken();
     bool _peekTokenIs(tokenType type);
+    bool _currentTokenIs(tokenType type);
     bool _expectPeek(tokenType type);
     void _peekError(tokenType type);
     void _noPrefixParseFnError(tokenType type);
@@ -53,6 +54,7 @@ private:
     precidanceType _peekPrecedence();
     std::shared_ptr<AST::Statement> _parseStatement();
     std::shared_ptr<AST::ExpressionStatement> _parseExpressionStatement();
+    std::shared_ptr<AST::VariableDeclarationStatement> _parseVariableDeclarationStatement();
     std::shared_ptr<AST::Expression> _parseExpression(precidanceType precedence);
 
     std::shared_ptr<AST::Expression> _parseInfixExpression(std::shared_ptr<AST::Expression> left_node);
