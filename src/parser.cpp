@@ -37,6 +37,11 @@ bool Parser::_peekTokenIs(tokenType type)
     return this->peekToken->type == type;
 }
 
+bool Parser::_currentTokenIs(tokenType type)
+{
+    return this->currentToken->type == type;
+}
+
 bool Parser::_expectPeek(tokenType type)
 {
     if (this->_peekTokenIs(type))
@@ -84,8 +89,7 @@ void Parser::_noPrefixParseFnError(tokenType type)
 std::shared_ptr<AST::Program> Parser::parseProgram()
 {
     AST::Program program;
-
-    while (this->currentToken->type != tokenType::END)
+    do
     {
         std::shared_ptr<AST::Statement> stmt = this->_parseStatement();
         if (stmt != nullptr)
@@ -93,13 +97,21 @@ std::shared_ptr<AST::Program> Parser::parseProgram()
             program.statements.push_back(stmt);
         }
         this->_nextToken();
-    }
+    } while (this->currentToken->type != tokenType::END);
     return std::make_shared<AST::Program>(program);
 }
 
 std::shared_ptr<AST::Statement> Parser::_parseStatement()
 {
-    return this->_parseExpressionStatement();
+    switch (this->currentToken->type)
+    {
+    case tokenType::LET:
+        return this->_parseVariableDeclarationStatement();
+        break;
+    default:
+        return this->_parseExpressionStatement();
+        break;
+    }
 }
 
 std::shared_ptr<AST::ExpressionStatement> Parser::_parseExpressionStatement()
@@ -113,6 +125,36 @@ std::shared_ptr<AST::ExpressionStatement> Parser::_parseExpressionStatement()
 
     AST::ExpressionStatement stmt(expr);
     return std::make_shared<AST::ExpressionStatement>(stmt);
+}
+
+std::shared_ptr<AST::VariableDeclarationStatement> Parser::_parseVariableDeclarationStatement()
+{
+    AST::VariableDeclarationStatement stmt;
+    if (!this->_expectPeek(tokenType::IDENT))
+    {
+        return nullptr;
+    }
+    stmt.name = std::make_shared<AST::IdentifierLiteral>(AST::IdentifierLiteral(this->currentToken->literal));
+    if (!this->_expectPeek(tokenType::COLON))
+    {
+        return nullptr;
+    }
+    if (!this->_expectPeek(tokenType::IDENT))
+    {
+        return nullptr;
+    }
+    stmt.valueType = std::make_shared<AST::IdentifierLiteral>(AST::IdentifierLiteral(this->currentToken->literal));
+    if (!this->_expectPeek(tokenType::EQUALS))
+    {
+        return nullptr;
+    }
+    this->_nextToken();
+    stmt.value = this->_parseExpression(precidanceType::LOWEST);
+    while (!(this->currentToken->type == tokenType::SEMICOLON))
+    {
+        this->_nextToken();
+    }
+    return std::make_shared<AST::VariableDeclarationStatement>(stmt);
 }
 
 std::shared_ptr<AST::Expression> Parser::_parseExpression(precidanceType precedence)
