@@ -1,3 +1,4 @@
+#include <iostream>
 #include "include/AST.hpp"
 #include "AST.hpp"
 
@@ -36,6 +37,25 @@ std::shared_ptr<nlohmann::json> AST::ExpressionStatement::toJson()
     return json;
 }
 
+std::shared_ptr<nlohmann::json> AST::VariableDeclarationStatement::toJson()
+{
+    std::shared_ptr<nlohmann::json> json = std::make_shared<nlohmann::json>();
+    json->operator[]("type") = NodeTypeToString(this->type());
+    if (this->name != nullptr)
+        json->operator[]("name") = *(this->name->toJson());
+    else
+        json->operator[]("name") = nullptr;
+    if (this->value != nullptr)
+        json->operator[]("value") = *(this->value->toJson());
+    else
+        json->operator[]("value") = nullptr;
+    if (this->valueType != nullptr)
+        json->operator[]("valueType") = *(this->valueType->toJson());
+    else
+        json->operator[]("valueType") = nullptr;
+    return json;
+}
+
 std::shared_ptr<nlohmann::json> AST::InfixExpression::toJson()
 {
     std::shared_ptr<nlohmann::json> json = std::make_shared<nlohmann::json>();
@@ -62,6 +82,14 @@ std::shared_ptr<nlohmann::json> AST::FloatLiteral::toJson()
     return json;
 }
 
+std::shared_ptr<nlohmann::json> AST::IdentifierLiteral::toJson()
+{
+    std::shared_ptr<nlohmann::json> json = std::make_shared<nlohmann::json>();
+    json->operator[]("type") = NodeTypeToString(this->type());
+    json->operator[]("value") = this->value;
+    return json;
+}
+
 std::string AST::NodeTypeToString(NodeType type)
 {
     switch (type)
@@ -70,12 +98,16 @@ std::string AST::NodeTypeToString(NodeType type)
         return std::string("Program");
     case AST::NodeType::ExpressionStatement:
         return std::string("ExpressionStatement");
+    case AST::NodeType::VariableDeclarationStatement:
+        return std::string("VariableDeclarationStatement");
     case AST::NodeType::InfixExpression:
         return std::string("InfixExpression");
     case AST::NodeType::IntegerLiteral:
         return std::string("IntegerLiteral");
     case AST::NodeType::FloatLiteral:
         return std::string("FloatLiteral");
+    case AST::NodeType::IdentifierLiteral:
+        return std::string("IdentifierLiteral");
     case AST::NodeType::Unknown:
         return std::string("Unknown");
     default:
