@@ -1,17 +1,13 @@
 #include <unordered_map>
+#include <cmath>
 #include <iomanip>
 #include "include/lexer.hpp"
 
-const std::unordered_map<std::string, tokenType> KEYWORDS = {
-    {"let", tokenType::LET},
-};
-
 tokenType lookupIdent(std::shared_ptr<std::string> ident)
 {
-    auto it = KEYWORDS.find(*ident);
-    if (it != KEYWORDS.end())
+    if (*ident == "let")
     {
-        return it->second;
+        return tokenType::LET;
     }
     return tokenType::IDENT;
 }
@@ -32,11 +28,10 @@ std::string Token::toString()
     std::string colNoString = std::to_string(col_no);
 
     // Apply padding to each field for alignment
-    typeString += std::string(10 - typeString.length(), ' ');
-    literalString += std::string(5 - literalString.length(), ' ');
-    lineNoString += std::string(2 - lineNoString.length(), ' ');
-    colNoString += std::string(2 - colNoString.length(), ' ');
-
+    typeString += std::string((literalString.length() > 10) ? 0 : 10 - literalString.length(), ' ');
+    literalString += std::string((literalString.length() > 5) ? 0 : 5 - literalString.length(), ' ');
+    lineNoString += std::string((literalString.length() > 2) ? 0 : 2 - literalString.length(), ' ');
+    colNoString += std::string((literalString.length() > 2) ? 0 : 2 - literalString.length(), ' ');
     // Construct the formatted string with colors
     return "Token{type: " + colorBlue + typeString + colorReset +
            ", literal: " + colorYellow + literalString + colorReset +
@@ -198,7 +193,8 @@ std::shared_ptr<Token> Lexer::nextToken()
 
 std::shared_ptr<Token> Lexer::_newToken(tokenType type, std::string currentChar)
 {
-    return std::make_shared<Token>(type, currentChar, this->lineNo, this->pos);
+    auto x = std::make_shared<Token>(type, currentChar, this->lineNo, this->pos);
+    return x;
 }
 
 std::shared_ptr<Token> Lexer::_readNumber()
