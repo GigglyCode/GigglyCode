@@ -5,6 +5,9 @@ include = "src/include"
 flags = /EHsc
 flags_gcc = -Wall -g
 
+clean:
+	del *.obj
+
 $(exec): $(sources)
 	$(compiler) -I$(include) $(sources) /Fe$(exec) $(flags)
 
@@ -19,6 +22,3 @@ run: $(exec)
 	@echo ---------------------------------------------------------
 	$(exec) ./dump/hello.gc
 
-clean:
-	del *.obj
-	del *.exe
