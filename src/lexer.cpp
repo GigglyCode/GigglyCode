@@ -9,6 +9,14 @@ tokenType lookupIdent(std::shared_ptr<std::string> ident)
     {
         return tokenType::LET;
     }
+    else if (*ident == "def")
+    {
+        return tokenType::DEF;
+    }
+    else if (*ident == "return")
+    {
+        return tokenType::RETURN;
+    }
     return tokenType::IDENT;
 }
 
@@ -67,10 +75,16 @@ std::string tokenTypeString(tokenType type)
         return "LPAREN";
     case tokenType::RPAREN:
         return "RPAREN";
+    case tokenType::LBRACE:
+        return "LBRACE";
+    case tokenType::RBRACE:
+        return "RBRACE";
     case tokenType::COLON:
         return "COLON";
     case tokenType::SEMICOLON:
         return "SEMICOLON";
+    case tokenType::RARROW:
+        return "RARROW";
     case tokenType::EQUALS:
         return "EQUALS";
     case tokenType::ILLEGAL:
@@ -79,6 +93,10 @@ std::string tokenTypeString(tokenType type)
         return "END";
     case tokenType::LET:
         return "LET";
+    case tokenType::DEF:
+        return "DEF";
+    case tokenType::RETURN:
+        return "RETURN";
     default:
         return "";
     }
@@ -115,6 +133,18 @@ void Lexer::_readChar()
     this->readPos++;
 };
 
+std::shared_ptr<std::string> Lexer::_peekChar()
+{
+    if (this->readPos >= this->source.length())
+    {
+        return std::make_shared<std::string>("\0");
+    }
+    else
+    {
+        return std::make_shared<std::string>(1, this->source[this->readPos]);
+    }
+}
+
 std::shared_ptr<Token> Lexer::nextToken()
 {
     std::shared_ptr<Token> token;
@@ -127,7 +157,15 @@ std::shared_ptr<Token> Lexer::nextToken()
     }
     else if (this->currentChar == "-")
     {
-        token = this->_newToken(tokenType::MINUS, this->currentChar);
+        if (*this->_peekChar() != ">")
+        {
+            token = this->_newToken(tokenType::MINUS, this->currentChar);
+        }
+        else
+        {
+            token = this->_newToken(tokenType::RARROW, this->currentChar + *this->_peekChar());
+            this->_readChar();
+        }
     }
     else if (this->currentChar == "*")
     {
@@ -156,6 +194,14 @@ std::shared_ptr<Token> Lexer::nextToken()
     else if (this->currentChar == ")")
     {
         token = this->_newToken(tokenType::RPAREN, this->currentChar);
+    }
+    else if (this->currentChar == "{")
+    {
+        token = this->_newToken(tokenType::LBRACE, this->currentChar);
+    }
+    else if (this->currentChar == "}")
+    {
+        token = this->_newToken(tokenType::RBRACE, this->currentChar);
     }
     else if (this->currentChar == ":")
     {
