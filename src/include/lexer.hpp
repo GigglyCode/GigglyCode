@@ -29,12 +29,17 @@ enum class tokenType
     // Symbols
     LPAREN,
     RPAREN,
+    LBRACE,
+    RBRACE,
     COLON,
     SEMICOLON,
+    RARROW,
     EQUALS,
 
     // Keywords
     LET,
+    DEF,
+    RETURN,
 };
 
 tokenType lookupIdent(std::string ident);
@@ -71,6 +76,7 @@ public:
 
 private:
     void _readChar();
+    std::shared_ptr<std::string> _peekChar();
     void _skipWhitespace();
     std::shared_ptr<Token> _newToken(tokenType type, std::string currentChar);
     std::shared_ptr<Token> _readNumber();
