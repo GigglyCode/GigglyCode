@@ -4,12 +4,13 @@
 #include <memory>
 #include "tokens.hpp"
 
+std::string getStringOnLineNumber(const std::string &str, int lineNumber);
+
 class Lexer
 {
 public:
     std::string source;
     int pos;
-    unsigned int readPos;
     unsigned int lineNo;
     int colNo;
     std::string currentChar;
@@ -19,12 +20,13 @@ public:
 private:
     token::tokenType _lookupIdent(std::shared_ptr<std::string> ident);
     void _readChar();
-    std::shared_ptr<std::string> _peekChar();
+    std::shared_ptr<std::string> _peekChar(int offset = 1);
     void _skipWhitespace();
     std::shared_ptr<token::Token> _newToken(token::tokenType type, std::string currentChar);
     std::shared_ptr<token::Token> _readNumber();
     bool _isDigit(std::string character);
     bool _isLetter(std::string character);
     std::shared_ptr<std::string> _readIdentifier();
+    std::shared_ptr<std::string> _readString(std::string quote);
 };
 #endif
