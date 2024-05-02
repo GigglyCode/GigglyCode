@@ -4,27 +4,40 @@ std::string token::Token::toString()
 {
     // Define ANSI escape codes for colors
     static const std::string colorReset = "\x1b[0m";
-    static const std::string colorBlue = "\x1b[34m";
-    static const std::string colorYellow = "\x1b[33m";
-    static const std::string colorGreen = "\x1b[32m";
-    static const std::string colorMagenta = "\x1b[35m";
+    static const std::string colorRed = "\x1b[91m";     // Red
+    static const std::string colorYellow = "\x1b[93m";  // Yellow
+    static const std::string colorGreen = "\x1b[92m";   // Green
+    static const std::string colorBlue = "\x1b[94m";    // Blue
+    static const std::string colorMagenta = "\x1b[95m"; // Magenta
 
     // Convert variables to strings
     std::string typeString = tokenTypeString(type);
-    std::string literalString = "\"" + literal + "\"";
+    std::string literalString = literal;
     std::string lineNoString = std::to_string(line_no);
     std::string colNoString = std::to_string(col_no);
 
+    // Calculate padding for literals
+    size_t literalPadding = literalString.length() >= 10 ? 0 : (10 - literalString.length()) / 2 + (literalString.length() % 2);
+    std::string literalPaddingStr(literalPadding, ' ');
+
     // Apply padding to each field for alignment
-    typeString += std::string((literalString.length() > 10) ? 0 : 10 - literalString.length(), ' ');
-    literalString += std::string((literalString.length() > 5) ? 0 : 5 - literalString.length(), ' ');
-    lineNoString += std::string((literalString.length() > 2) ? 0 : 2 - literalString.length(), ' ');
-    colNoString += std::string((literalString.length() > 2) ? 0 : 2 - literalString.length(), ' ');
+    if (typeString.length() < 15)
+    {
+        typeString += std::string(15 - typeString.length(), ' ');
+    }
+    if (literalString.length() < 2)
+    {
+        lineNoString += std::string(2 - lineNoString.length(), ' ');
+    }
+    if (colNoString.length() < 2)
+    {
+        colNoString += std::string(2 - colNoString.length(), ' ');
+    }
     // Construct the formatted string with colors
-    return "Token{type: " + colorBlue + typeString + colorReset +
-           ", literal: " + colorYellow + literalString + colorReset +
-           ", line_no: " + colorGreen + lineNoString + colorReset +
-           ", col_no: " + colorMagenta + colNoString + colorReset + "}";
+    return colorRed + "Token{type: " + colorReset + colorBlue + typeString + colorReset +
+           colorRed + ",literal: " + colorGreen + "\"" + colorYellow + literalPaddingStr + literalString + literalPaddingStr + colorGreen + "\"" +
+           colorRed + ",line_no: " + colorReset + colorGreen + lineNoString + colorReset +
+           colorRed + ",col_no: " + colorReset + colorMagenta + colNoString + colorReset + colorRed + "};" + colorReset;
 }
 
 std::string token::tokenTypeString(tokenType type)
@@ -61,10 +74,10 @@ std::string token::tokenTypeString(tokenType type)
         return "Dash";
     case tokenType::Asterisk:
         return "Asterisk";
+    case tokenType::AsteriskAsterisk:
+        return "AsteriskAsterisk";
     case tokenType::Percent:
         return "Percent";
-    case tokenType::Caret:
-        return "Caret";
     case tokenType::ForwardSlash:
         return "ForwardSlash";
     case tokenType::BackwardSlash:
@@ -83,16 +96,14 @@ std::string token::tokenTypeString(tokenType type)
         return "Semicolon";
     case tokenType::RightArrow:
         return "RightArrow";
+    case tokenType::Comma:
+        return "Comma";
     case tokenType::Equals:
         return "Equals";
     case tokenType::Illegal:
         return "Illegal";
     case tokenType::EndOfFile:
         return "EndOfFile";
-    case tokenType::Var:
-        return "Var";
-    case tokenType::Def:
-        return "Def";
     case tokenType::Return:
         return "Return";
     case tokenType::GreaterThan:
@@ -107,6 +118,56 @@ std::string token::tokenTypeString(tokenType type)
         return "EqualEqual";
     case tokenType::NotEquals:
         return "NotEquals";
+    case tokenType::BitwiseAnd:
+        return "BitwiseAnd";
+    case tokenType::BitwiseOr:
+        return "BitwiseOr";
+    case tokenType::BitwiseXor:
+        return "BitwiseXor";
+    case tokenType::BitwiseNot:
+        return "BitwiseNot";
+    case tokenType::LeftShift:
+        return "LeftShift";
+    case tokenType::RightShift:
+        return "RightShift";
+    case tokenType::And:
+        return "And";
+    case tokenType::Or:
+        return "Or";
+    case tokenType::Not:
+        return "Not";
+    case tokenType::Var:
+        return "Var";
+    case tokenType::Def:
+        return "Def";
+    case tokenType::If:
+        return "If";
+    case tokenType::Else:
+        return "Else";
+    case tokenType::ElIf:
+        return "ElIf";
+    case tokenType::Is:
+        return "Is";
+    case tokenType::While:
+        return "While";
+    case tokenType::For:
+        return "For";
+    case tokenType::In:
+        return "In";
+    case tokenType::Break:
+        return "Break";
+    case tokenType::Continue:
+        return "Continue";
+    case tokenType::True:
+        return "True";
+    case tokenType::False:
+        return "False";
+    case tokenType::Maybe:
+        return "Maybe";
+    case tokenType::None:
+        return "None";
+    case tokenType::String:
+        return "String";
     default:
         return "unknown token type(" + std::to_string(static_cast<int>(type)) + ")";
     }
