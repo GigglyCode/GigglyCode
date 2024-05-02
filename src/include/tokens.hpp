@@ -13,38 +13,48 @@ namespace token
 
         // Comparison Operators
         GreaterThan,        // Greater than >
-        LessThan,           // Less than
-        GreaterThanOrEqual, // Greater than or equal to
-        LessThanOrEqual,    // Less than or equal to
-        EqualEqual,         // Equal to
-        NotEquals,          // Not equal to
+        LessThan,           // Less than <
+        GreaterThanOrEqual, // Greater than or equal to >=
+        LessThanOrEqual,    // Less than or equal to <=
+        EqualEqual,         // Equal to ==
+        NotEquals,          // Not equal to !=
 
         // Data Types
-        Identifier,
-        Integer,
-        Float,
+        Identifier, // Identifier token [a-zA-Z_][a-zA-Z0-9_]*
+        Integer,    // Integer token [0-9]+
+        Float,      // Float token [0-9]+.[0-9]+
+        String,     // String token ".*"
 
         // Assignment Operators
-        PlusEqual,          // Addition assignment
-        DashEqual,          // Subtraction assignment
-        AsteriskEqual,      // Multiplication assignment
-        PercentEqual,       // Modulus assignment
-        CaretEqual,         // Exponentiation assignment
-        ForwardSlashEqual,  // Division assignment
-        BackwardSlashEqual, // Division assignment
-        Equals,             // Equals sign
+        PlusEqual,          // Addition assignment +=
+        DashEqual,          // Subtraction assignment -=
+        AsteriskEqual,      // Multiplication assignment *=
+        PercentEqual,       // Modulus assignment %=
+        CaretEqual,         // Exponentiation assignment ^=
+        ForwardSlashEqual,  // Division assignment /=
+        BackwardSlashEqual, // Division assignment \=
+        Equals,             // Equals sign =
+        Is,                 // Is sign is
 
         // Increment and Decrement Operators
-        Increment, // Increment
-        Decrement, // Decrement
+        Increment, // Increment ++
+        Decrement, // Decrement --
+
+        // Bitwise Operators
+        BitwiseAnd, // Bitwise AND &&
+        BitwiseOr,  // Bitwise OR ||
+        BitwiseXor, // Bitwise XOR ^
+        BitwiseNot, // Bitwise NOT ~
+        LeftShift,  // Left shift <<
+        RightShift, // Right shift >>
 
         // Arithmetic Operators
-        Plus,         // Addition
-        Dash,         // Subtraction
-        Asterisk,     // Multiplication
-        Percent,      // Modulus
-        Caret,        // Exponentiation
-        ForwardSlash, // Division
+        Plus,             // Addition
+        Dash,             // Subtraction
+        Asterisk,         // Multiplication
+        Percent,          // Modulus
+        AsteriskAsterisk, // Exponentiation
+        ForwardSlash,     // Division
         BackwardSlash,
 
         // Symbols
@@ -55,14 +65,27 @@ namespace token
         Colon,      // Colon
         Semicolon,  // Semicolon
         RightArrow, // Right Arrow (e.g., in function return type specification)
+        Comma,      // Comma
 
         // Keywords
-        Var,    // Variable declaration
-        Def,    // Function definition
-        Return, // Return statement
-
-        // Comment
-        Comment // Comment token
+        And,      // Logical AND and
+        Or,       // Logical OR or
+        Not,      // Logical NOT not
+        Var,      // Variable declaration var
+        Def,      // Function definition def
+        Return,   // Return statement return
+        If,       // If statement if
+        Else,     // Else statement else
+        ElIf,     // Else If statement elif
+        While,    // While statement while
+        For,      // For statement for
+        In,       // In statement in
+        Break,    // Break statement break
+        Continue, // Continue statement continue
+        True,     // Boolean true true
+        False,    // Boolean false false
+        Maybe,    // Maybe type maybe
+        None,     // None type none
     };
 
     std::string tokenTypeString(tokenType type);
