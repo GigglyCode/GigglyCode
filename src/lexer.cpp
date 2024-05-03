@@ -368,14 +368,48 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     {
         if (this->currentChar == "\"")
         {
-            std::shared_ptr<std::string> str = this->_readString("\"");
-            token = this->_newToken(token::tokenType::String, *str);
+            if (*this->_peekChar(1) == "\"")
+            {
+                if (*this->_peekChar(2) == "\"")
+                {
+                    this->_readChar();
+                    this->_readChar();
+                    std::shared_ptr<std::string> str = this->_readString("\"\"\"");
+                    token = this->_newToken(token::tokenType::String, *str);
+                }
+                else
+                {
+                    raiseLexerError("Invalid string literal", this->source, this->lineNo, this->colNo, this->currentChar);
+                }
+            }
+            else
+            {
+                std::shared_ptr<std::string> str = this->_readString("\"");
+                token = this->_newToken(token::tokenType::String, *str);
+            }
             return token;
         }
         else if (this->currentChar == "'")
         {
-            std::shared_ptr<std::string> str = this->_readString("'");
-            token = this->_newToken(token::tokenType::String, *str);
+            if (*this->_peekChar(1) == "'")
+            {
+                if (*this->_peekChar(2) == "'")
+                {
+                    this->_readChar();
+                    this->_readChar();
+                    std::shared_ptr<std::string> str = this->_readString("'");
+                    token = this->_newToken(token::tokenType::String, *str);
+                }
+                else
+                {
+                    raiseLexerError("Invalid string literal", this->source, this->lineNo, this->colNo, this->currentChar);
+                }
+            }
+            else
+            {
+                std::shared_ptr<std::string> str = this->_readString("'");
+                token = this->_newToken(token::tokenType::String, *str);
+            }
             return token;
         }
         else if (this->_isLetter(this->currentChar))
@@ -494,8 +528,15 @@ std::shared_ptr<std::string> Lexer::_readString(std::string quote)
                 literal += "\\" + this->currentChar;
             }
         }
-        else if (this->currentChar == quote)
+        else if ((this->currentChar == quote))
         {
+            this->_readChar();
+            break;
+        }
+        else if (this->currentChar + *this->_peekChar() + *this->_peekChar(2) == quote)
+        {
+            this->_readChar();
+            this->_readChar();
             this->_readChar();
             break;
         }
