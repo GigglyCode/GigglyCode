@@ -1,6 +1,9 @@
 # GigglyCode
 A programing language, created by SohamTilekar for learning C++.
 
+# Warning ⚠
+The Language Is Curently in the parsing Stage.
+
 # Goal
 The goal of this programming language is to allow inter-operability between languages by having support inlining Python and C code (other programming languages might be supported as well).
 
