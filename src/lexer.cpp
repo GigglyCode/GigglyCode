@@ -23,7 +23,7 @@ Lexer::Lexer(std::string source)
     this->pos = -1;
     this->lineNo = 1;
     this->colNo = -1;
-    this->currentChar = "\0";
+    this->currentChar = "";
     this->_readChar();
 }
 
@@ -32,7 +32,7 @@ void Lexer::_readChar()
     this->pos++;
     if (this->pos >= this->source.length())
     {
-        this->currentChar = "\0";
+        this->currentChar = "";
     }
     else
     {
@@ -45,7 +45,7 @@ std::shared_ptr<std::string> Lexer::_peekChar(int offset)
 {
     if ((this->pos + offset) >= this->source.length())
     {
-        return std::make_shared<std::string>("\0");
+        return std::make_shared<std::string>("");
     }
     else
     {
@@ -360,7 +360,7 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     {
         token = this->_newToken(token::tokenType::Comma, this->currentChar);
     }
-    else if (this->currentChar == "\0")
+    else if (this->currentChar == "")
     {
         token = this->_newToken(token::tokenType::EndOfFile, "");
     }
@@ -369,6 +369,12 @@ std::shared_ptr<token::Token> Lexer::nextToken()
         if (this->currentChar == "\"")
         {
             std::shared_ptr<std::string> str = this->_readString("\"");
+            token = this->_newToken(token::tokenType::String, *str);
+            return token;
+        }
+        else if (this->currentChar == "'")
+        {
+            std::shared_ptr<std::string> str = this->_readString("'");
             token = this->_newToken(token::tokenType::String, *str);
             return token;
         }
@@ -415,7 +421,7 @@ std::shared_ptr<token::Token> Lexer::_readNumber()
         }
         number += this->currentChar;
         this->_readChar();
-        if (this->currentChar == "\0")
+        if (this->currentChar == "")
             break;
     }
     if (dot_count == 0)
@@ -451,7 +457,7 @@ void Lexer::_skipWhitespace()
     if (this->currentChar == "#")
     {
         this->_readChar();
-        while (this->currentChar != "\n" && this->currentChar != "\0")
+        while (this->currentChar != "\n" && this->currentChar != "")
         {
             this->_readChar();
         }
@@ -462,70 +468,25 @@ void Lexer::_skipWhitespace()
 std::shared_ptr<std::string> Lexer::_readString(std::string quote)
 {
     std::string str = "";
-    std::string literal = "";
-    this->_readChar();
-    while (this->currentChar != quote && this->currentChar != "\0")
+    std::string literal = quote;
+    while (true)
     {
-        if ((quote != "\"\"\"" && quote != "'''") && (this->currentChar == "\n" || this->currentChar == "\r"))
+        this->_readChar();
+        if (this->currentChar == "")
         {
-            raiseLexerError("Invalid string because no closing quote found on the same line.", this->source, this->lineNo, this->colNo, literal);
+            raiseLexerError("Unexpected EOF while parsing string literal", this->source, this->lineNo, this->colNo, literal);
         }
-        else if (this->currentChar == "\0")
+        else if (this->currentChar == "\n")
         {
-            raiseLexerError("Invalid string because no closing quote found.", this->source, this->lineNo, this->colNo, literal);
+            raiseLexerError("Unexpected newline while parsing string literal", this->source, this->lineNo, this->colNo, literal);
         }
         else if (this->currentChar == "\\")
         {
             this->_readChar();
-            if (this->currentChar == "n")
-            {
-                str += "\n";
-                literal += "\\n";
-            }
-            else if (this->currentChar == "t")
-            {
-                str += "\t";
-                literal += "\\t";
-            }
-            else if (this->currentChar == "r")
-            {
-                str += "\r";
-                literal += "\\r";
-            }
-            else if (this->currentChar == "b")
-            {
-                str += "\b";
-                literal += "\\b";
-            }
-            else if (this->currentChar == "a")
-            {
-                str += "\a";
-                literal += "\\a";
-            }
-            else if (this->currentChar == "f")
-            {
-                str += "\f";
-                literal += "\\f";
-            }
-            else if (this->currentChar == "v")
-            {
-                str += "\v";
-                literal += "\\v";
-            }
-            else if (this->currentChar == "\\")
-            {
-                str += "\\";
-                literal += "\\\\";
-            }
-            else if (this->currentChar == "\"")
+            if (this->currentChar == "\"")
             {
                 str += "\"";
                 literal += "\\\"";
-            }
-            else if (this->currentChar == "'")
-            {
-                str += "'";
-                literal += "\\'";
             }
             else
             {
@@ -533,14 +494,17 @@ std::shared_ptr<std::string> Lexer::_readString(std::string quote)
                 literal += "\\" + this->currentChar;
             }
         }
+        else if (this->currentChar == quote)
+        {
+            this->_readChar();
+            break;
+        }
         else
         {
             str += this->currentChar;
             literal += this->currentChar;
         }
-        this->_readChar();
     }
-    this->_readChar();
     return std::make_shared<std::string>(str);
 }
 
