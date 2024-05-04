@@ -1,4 +1,6 @@
-#include "include/tokens.hpp"
+#include <string>
+#include <unordered_map>
+#include "./tokens.hpp"
 
 std::string token::Token::toString()
 {
@@ -13,8 +15,20 @@ std::string token::Token::toString()
     // Convert variables to strings
     std::string typeString = tokenTypeString(type);
     std::string literalString = literal;
+    static const std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
+
+    for (const auto &replacement : replacements)
+    {
+        size_t pos = literalString.find(replacement.first);
+        while (pos != std::string::npos)
+        {
+            literalString.replace(pos, 1, replacement.second);
+            pos = literalString.find(replacement.first, pos + replacement.second.size());
+        }
+    };
     std::string lineNoString = std::to_string(line_no);
     std::string colNoString = std::to_string(col_no);
+    std::string endColNoString = std::to_string(end_col_no);
 
     // Calculate padding for literals
     size_t literalPadding = literalString.length() >= 10 ? 0 : (10 - literalString.length()) / 2 + (literalString.length() % 2);
@@ -33,11 +47,17 @@ std::string token::Token::toString()
     {
         colNoString += std::string(2 - colNoString.length(), ' ');
     }
+    if (endColNoString.length() < 2)
+    {
+        endColNoString += std::string(2 - endColNoString.length(), ' ');
+    }
     // Construct the formatted string with colors
     return colorRed + "Token{type: " + colorReset + colorBlue + typeString + colorReset +
-           colorRed + ",literal: " + colorGreen + "\"" + colorYellow + literalPaddingStr + literalString + literalPaddingStr + colorGreen + "\"" +
-           colorRed + ",line_no: " + colorReset + colorGreen + lineNoString + colorReset +
-           colorRed + ",col_no: " + colorReset + colorMagenta + colNoString + colorReset + colorRed + "};" + colorReset;
+           colorRed + ", literal: " + colorGreen + "\"" + colorYellow + literalPaddingStr + literalString + literalPaddingStr + colorGreen + "\"" +
+           colorRed + ", line_no: " + colorReset + colorGreen + lineNoString + colorReset +
+           colorRed + ", col_no: " + colorReset + colorMagenta + colNoString + colorReset +
+           colorRed + ", end_col_no: " + colorReset + colorMagenta + endColNoString + colorReset +
+           colorRed + "};" + colorReset;
 }
 
 std::string token::tokenTypeString(tokenType type)
@@ -68,6 +88,10 @@ std::string token::tokenTypeString(tokenType type)
         return "Increment";
     case tokenType::Decrement:
         return "Decrement";
+    case tokenType::Dot:
+        return "Dot";
+    case tokenType::Ellipsis:
+        return "Ellipsis";
     case tokenType::Plus:
         return "Plus";
     case tokenType::Dash:
@@ -90,6 +114,10 @@ std::string token::tokenTypeString(tokenType type)
         return "LeftBrace";
     case tokenType::RightBrace:
         return "RightBrace";
+    case tokenType::LeftBracket:
+        return "LeftBracket";
+    case tokenType::RightBracket:
+        return "RightBracket";
     case tokenType::Colon:
         return "Colon";
     case tokenType::Semicolon:

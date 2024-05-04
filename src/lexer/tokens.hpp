@@ -49,23 +49,27 @@ namespace token
         RightShift, // Right shift >>
 
         // Arithmetic Operators
-        Plus,             // Addition
-        Dash,             // Subtraction
-        Asterisk,         // Multiplication
-        Percent,          // Modulus
-        AsteriskAsterisk, // Exponentiation
-        ForwardSlash,     // Division
-        BackwardSlash,
+        Dot,              // Dot .
+        Ellipsis,         // Ellipsis ...
+        Plus,             // Addition +
+        Dash,             // Subtraction -
+        Asterisk,         // Multiplication *
+        Percent,          // Modulus %
+        AsteriskAsterisk, // Exponentiation **
+        ForwardSlash,     // Division /
+        BackwardSlash,    //
 
         // Symbols
-        LeftParen,  // Left Parenthesis
-        RightParen, // Right Parenthesis
-        LeftBrace,  // Left Brace
-        RightBrace, // Right Brace
-        Colon,      // Colon
-        Semicolon,  // Semicolon
-        RightArrow, // Right Arrow (e.g., in function return type specification)
-        Comma,      // Comma
+        LeftParen,    // Left Parenthesis (
+        RightParen,   // Right Parenthesis )
+        LeftBrace,    // Left Brace {
+        RightBrace,   // Right Brace }
+        LeftBracket,  // Left Bracket [
+        RightBracket, // Right Bracket ]
+        Colon,        // Colon :
+        Semicolon,    // Semicolon ;
+        RightArrow,   // Right Arrow ->
+        Comma,        // Comma ,
 
         // Keywords
         And,      // Logical AND and
@@ -97,12 +101,16 @@ namespace token
         std::string literal;
         int line_no;
         int col_no;
+        int end_col_no;
 
         Token(){};
         Token(tokenType type, int line_no, int col_no)
-            : type(type), line_no(line_no), col_no(col_no){};
+            : type(type), line_no(line_no), end_col_no(col_no){};
         Token(tokenType type, std::string literal, int line_no, int col_no)
-            : type(type), literal(literal), line_no(line_no), col_no(col_no){};
+            : type(type), literal(literal), line_no(line_no), end_col_no(col_no)
+        {
+            this->col_no = end_col_no - literal.length();
+        };
         std::string toString();
         void print();
     };
