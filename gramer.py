@@ -8,6 +8,7 @@ def name(arg1: type, arg2: type, *args: type, **kwargs: type) -> None {
 x: int = 1
 x: float = 1 # Auto Type Conversion
 x: int = "2043" # Auto Type Conversion it type hint is different
+x: int[] = [1, 2, 3]
 
 if x == 1 {
     print("Hello")
@@ -36,7 +37,7 @@ class A {
 a: A = "10"
 print(a)
 
-```python==3.12 import<function add, sub><class op><var hi>
+```python==3.12 export<function add, sub><class op><var hi>
 import gigly
 
 def add(a: int, b: int) -> int:
