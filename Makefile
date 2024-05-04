@@ -1,7 +1,7 @@
 compiler = cl
 exec = gigly.exe
-sources = $(wildcard src/*.cpp)
-include = "src/include"
+sources = $(wildcard src/**/*.cpp src/*.cpp)
+include = "src/**/"
 flags = /EHsc
 flags_gcc = -Wall -g
 
@@ -10,15 +10,16 @@ clean:
 
 $(exec): $(sources)
 	$(compiler) -I$(include) $(sources) /Fe$(exec) $(flags)
+	$(clean)
 
 gcc:
 	g++ -I$(include) $(sources) -o $(exec) $(flags_gcc)
+	$(clean)
 
 gcc_run: gcc
 	@echo ---------------------------------------------------------
-	./$(exec) ./dump/hello.gc
+	./$(exec) ./test/testscipt.gc
 
 run: $(exec)
 	@echo ---------------------------------------------------------
-	$(exec) ./dump/hello.gc
-
+	$(exec) ./test/testscipt.gc
