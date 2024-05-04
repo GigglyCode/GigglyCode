@@ -5,6 +5,7 @@
 #include "tokens.hpp"
 
 std::string getStringOnLineNumber(const std::string &str, int lineNumber);
+int getNumberOfLines(const std::string &str);
 
 class Lexer
 {
@@ -26,6 +27,7 @@ private:
     std::shared_ptr<token::Token> _readNumber();
     bool _isDigit(std::string character);
     bool _isLetter(std::string character);
+    std::shared_ptr<std::string> _isString();
     std::shared_ptr<std::string> _readIdentifier();
     std::shared_ptr<std::string> _readString(std::string quote);
 };

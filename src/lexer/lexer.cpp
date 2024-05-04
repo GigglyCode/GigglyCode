@@ -1,20 +1,5 @@
-#include "include/lexer.hpp"
-#include "errors.hpp"
-
-std::string getStringOnLineNumber(const std::string &str, int lineNumber)
-{
-    size_t startPos = 0;
-    for (int i = 1; i < lineNumber; ++i)
-    {
-        if ((startPos = str.find('\n', startPos)) == std::string::npos)
-        {
-            return "";
-        }
-        startPos++;
-    }
-    size_t endPos = str.find('\n', startPos);
-    return str.substr(startPos, (endPos != std::string::npos) ? endPos - startPos : std::string::npos);
-}
+#include "lexer.hpp"
+#include "../errors/errors.hpp"
 
 Lexer::Lexer(std::string source)
 {
@@ -25,32 +10,6 @@ Lexer::Lexer(std::string source)
     this->colNo = -1;
     this->currentChar = "";
     this->_readChar();
-}
-
-void Lexer::_readChar()
-{
-    this->pos++;
-    if (this->pos >= this->source.length())
-    {
-        this->currentChar = "";
-    }
-    else
-    {
-        this->currentChar = this->source[this->pos];
-    }
-    this->colNo++;
-};
-
-std::shared_ptr<std::string> Lexer::_peekChar(int offset)
-{
-    if ((this->pos + offset) >= this->source.length())
-    {
-        return std::make_shared<std::string>("");
-    }
-    else
-    {
-        return std::make_shared<std::string>(1, this->source[this->pos + offset]);
-    }
 }
 
 token::tokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident)
@@ -156,6 +115,17 @@ std::shared_ptr<token::Token> Lexer::nextToken()
         {
             token = this->_newToken(token::tokenType::Plus, this->currentChar);
         }
+    }
+    else if (this->currentChar == ".")
+    {
+        if (*this->_peekChar() == "." && *this->_peekChar(2) == ".")
+        {
+            token = this->_newToken(token::tokenType::Ellipsis, this->currentChar + *this->_peekChar() + *(this->_peekChar(2)));
+            this->_readChar();
+            this->_readChar();
+        }
+        else
+            token = this->_newToken(token::tokenType::Dot, this->currentChar);
     }
     else if (this->currentChar == "-")
     {
@@ -366,50 +336,10 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     }
     else
     {
-        if (this->currentChar == "\"")
+        if (*this->_isString() != "")
         {
-            if (*this->_peekChar(1) == "\"")
-            {
-                if (*this->_peekChar(2) == "\"")
-                {
-                    this->_readChar();
-                    this->_readChar();
-                    std::shared_ptr<std::string> str = this->_readString("\"\"\"");
-                    token = this->_newToken(token::tokenType::String, *str);
-                }
-                else
-                {
-                    raiseLexerError("Invalid string literal", this->source, this->lineNo, this->colNo, this->currentChar);
-                }
-            }
-            else
-            {
-                std::shared_ptr<std::string> str = this->_readString("\"");
-                token = this->_newToken(token::tokenType::String, *str);
-            }
-            return token;
-        }
-        else if (this->currentChar == "'")
-        {
-            if (*this->_peekChar(1) == "'")
-            {
-                if (*this->_peekChar(2) == "'")
-                {
-                    this->_readChar();
-                    this->_readChar();
-                    std::shared_ptr<std::string> str = this->_readString("'");
-                    token = this->_newToken(token::tokenType::String, *str);
-                }
-                else
-                {
-                    raiseLexerError("Invalid string literal", this->source, this->lineNo, this->colNo, this->currentChar);
-                }
-            }
-            else
-            {
-                std::shared_ptr<std::string> str = this->_readString("'");
-                token = this->_newToken(token::tokenType::String, *str);
-            }
+            std::shared_ptr<std::string> str = this->_readString(*this->_isString());
+            token = this->_newToken(token::tokenType::String, *str);
             return token;
         }
         else if (this->_isLetter(this->currentChar))
@@ -431,130 +361,3 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     this->_readChar();
     return token;
 }
-
-std::shared_ptr<token::Token> Lexer::_newToken(token::tokenType type, std::string currentChar)
-{
-    auto x = std::make_shared<token::Token>(type, currentChar, this->lineNo, this->colNo);
-    return x;
-}
-
-std::shared_ptr<token::Token> Lexer::_readNumber()
-{
-    int dot_count = 0;
-    std::string number = "";
-    while (this->_isDigit(this->currentChar) || this->currentChar == ".")
-    {
-        if (this->currentChar == ".")
-        {
-            dot_count++;
-            if (dot_count > 1)
-            {
-                printf("Invalid number at line %d, column %d\n", this->lineNo, this->colNo);
-                return this->_newToken(token::tokenType::Illegal, this->currentChar);
-            }
-        }
-        number += this->currentChar;
-        this->_readChar();
-        if (this->currentChar == "")
-            break;
-    }
-    if (dot_count == 0)
-    {
-        return this->_newToken(token::tokenType::Integer, number);
-    }
-    return this->_newToken(token::tokenType::Float, number);
-};
-
-std::shared_ptr<std::string> Lexer::_readIdentifier()
-{
-    std::string identifier = "";
-    while (this->_isLetter(this->currentChar) || this->_isDigit(this->currentChar))
-    {
-        identifier += this->currentChar;
-        this->_readChar();
-    };
-    return std::make_shared<std::string>(identifier);
-}
-
-void Lexer::_skipWhitespace()
-{
-    while (this->currentChar == " " || this->currentChar == "\t" || this->currentChar == "\n" || this->currentChar == "\r")
-    {
-        if (this->currentChar == "\n")
-        {
-            this->lineNo++;
-            this->colNo = 0;
-        }
-
-        this->_readChar();
-    }
-    if (this->currentChar == "#")
-    {
-        this->_readChar();
-        while (this->currentChar != "\n" && this->currentChar != "")
-        {
-            this->_readChar();
-        }
-        this->_skipWhitespace();
-    }
-}
-
-std::shared_ptr<std::string> Lexer::_readString(std::string quote)
-{
-    std::string str = "";
-    std::string literal = quote;
-    while (true)
-    {
-        this->_readChar();
-        if (this->currentChar == "")
-        {
-            raiseLexerError("Unexpected EOF while parsing string literal", this->source, this->lineNo, this->colNo, literal);
-        }
-        else if (this->currentChar == "\n")
-        {
-            raiseLexerError("Unexpected newline while parsing string literal", this->source, this->lineNo, this->colNo, literal);
-        }
-        else if (this->currentChar == "\\")
-        {
-            this->_readChar();
-            if (this->currentChar == "\"")
-            {
-                str += "\"";
-                literal += "\\\"";
-            }
-            else
-            {
-                str += "\\" + this->currentChar;
-                literal += "\\" + this->currentChar;
-            }
-        }
-        else if ((this->currentChar == quote))
-        {
-            this->_readChar();
-            break;
-        }
-        else if (this->currentChar + *this->_peekChar() + *this->_peekChar(2) == quote)
-        {
-            this->_readChar();
-            this->_readChar();
-            this->_readChar();
-            break;
-        }
-        else
-        {
-            str += this->currentChar;
-            literal += this->currentChar;
-        }
-    }
-    return std::make_shared<std::string>(str);
-}
-
-bool Lexer::_isDigit(std::string character)
-{
-    return character >= "0" && character <= "9";
-};
-
-bool Lexer::_isLetter(std::string character)
-{
-    return (character >= "a" && character <= "z") || (character >= "A" && character <= "Z") || character == "_";
-};
