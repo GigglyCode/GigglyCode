@@ -1,14 +1,16 @@
-def function(x, y, z) -> bool:
-    if x == "True":
+def function(x, y, z) -> bool {
+    if x == "True" {
         return True
-    elif y == "False":
+    } else if y == "False" {
         return False
-    elif z == "Maybe":
+    } else if z == "Maybe" {
         return Maybe
-    elif x == "None":
+    } else if x == "None" {
         return None
-    else:
+    } else {
         return ''''''
+    }
+}
 
 var a = "Hello, ";
 var b = 'world!';
