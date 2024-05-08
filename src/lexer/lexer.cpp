@@ -26,10 +26,6 @@ token::tokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident)
     {
         return token::tokenType::Not;
     }
-    else if (*ident == "var")
-    {
-        return token::tokenType::Var;
-    }
     else if (*ident == "def")
     {
         return token::tokenType::Def;

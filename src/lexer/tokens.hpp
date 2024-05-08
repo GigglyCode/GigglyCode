@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+
 namespace token
 {
     enum class tokenType
@@ -75,7 +76,6 @@ namespace token
         And,      // Logical AND and
         Or,       // Logical OR or
         Not,      // Logical NOT not
-        Var,      // Variable declaration var
         Def,      // Function definition def
         Return,   // Return statement return
         If,       // If statement if
@@ -92,7 +92,7 @@ namespace token
         None,     // None type none
     };
 
-    std::string tokenTypeString(tokenType type);
+    std::shared_ptr<std::string> tokenTypeString(tokenType type);
 
     class Token
     {
@@ -103,10 +103,10 @@ namespace token
         int col_no;
         int end_col_no;
 
-        Token(){};
-        Token(tokenType type, int line_no, int col_no)
+        inline Token(){};
+        inline Token(tokenType type, int line_no, int col_no)
             : type(type), line_no(line_no), end_col_no(col_no){};
-        Token(tokenType type, std::string literal, int line_no, int col_no)
+        inline Token(tokenType type, std::string literal, int line_no, int col_no)
             : type(type), literal(literal), line_no(line_no), end_col_no(col_no)
         {
             this->col_no = end_col_no - literal.length();
