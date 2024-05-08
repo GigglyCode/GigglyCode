@@ -57,11 +57,11 @@ std::shared_ptr<std::string> Lexer::_readString(std::string quote)
         this->_readChar();
         if (this->currentChar == "")
         {
-            raiseSyntaxError(this->source, "Quotation mark not closed", this->lineNo, stColNo, literal, "UnclosedQuoteError", "Ensure the quotation mark is properly closed at the end of the string literal");
+            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal");
         }
         else if (this->currentChar == "\n" && quote != "\"\"\"" && quote != "'''")
         {
-            raiseSyntaxError(this->source, "Unclosed or mismatched quotes in string", this->lineNo, stColNo, literal, "UnclosedQuoteError", "Ensure that the quote marks are properly closed on the same line");
+            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal");
         }
         else if (this->currentChar == "\\")
         {
