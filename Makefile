@@ -1,6 +1,6 @@
 compiler = cl
-exec = gigly.exe
-sources = $(wildcard src/**/*.cpp src/*.cpp)
+exec = ./build/gigly.exe
+sources = $(wildcard src/**/*.cpp src/*.cpp src/**/**/*.cpp)
 include = "src/**/"
 flags = /EHsc
 flags_gcc = -Wall -g
@@ -10,11 +10,11 @@ clean:
 
 $(exec): $(sources)
 	$(compiler) -I$(include) $(sources) /Fe$(exec) $(flags)
-	$(clean)
+	del *.obj
 
 gcc:
 	g++ -I$(include) $(sources) -o $(exec) $(flags_gcc)
-	$(clean)
+	del *.obj
 
 gcc_run: gcc
 	@echo ---------------------------------------------------------

@@ -2,8 +2,10 @@
 #include <fstream>
 #include <string>
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
-bool DEBUG_LEXER = true;
+bool DEBUG_LEXER = false;
+bool DEBUG_PARSER = true;
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +28,22 @@ int main(int argc, char *argv[])
             std::shared_ptr<token::Token> token = debugLexer.nextToken();
             token->print();
         }
-        return EXIT_SUCCESS;
     }
+    Lexer l(fileContent);
+    parser::Parser p(std::make_shared<Lexer>(l));
+    if (DEBUG_PARSER)
+    {
+        std::cout << "=========== Parser Debug ===========" << std::endl;
+        auto program = p.parseProgram();
+        std::cout << program->toJSON()->dump(4);
+        for (auto &err : p.errors)
+        {
+            err->raise(false);
+        }
+        if (p.errors.size() > 0)
+        {
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
 }
