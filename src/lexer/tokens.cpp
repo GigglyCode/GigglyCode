@@ -17,15 +17,13 @@ std::string token::Token::toString()
     std::string literalString = literal;
     static const std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
 
-    for (const auto &replacement : replacements)
-    {
+    for (const auto &replacement : replacements) {
         size_t pos = literalString.find(replacement.first);
-        while (pos != std::string::npos)
-        {
+        while (pos != std::string::npos) {
             literalString.replace(pos, 1, replacement.second);
             pos = literalString.find(replacement.first, pos + replacement.second.size());
         }
-    };
+    }
     std::string lineNoString = std::to_string(line_no);
     std::string colNoString = std::to_string(col_no);
     std::string endColNoString = std::to_string(end_col_no);
@@ -36,21 +34,13 @@ std::string token::Token::toString()
 
     // Apply padding to each field for alignment
     if (typeString.length() < 15)
-    {
         typeString += std::string(15 - typeString.length(), ' ');
-    }
     if (literalString.length() < 2)
-    {
         lineNoString += std::string(2 - lineNoString.length(), ' ');
-    }
     if (colNoString.length() < 2)
-    {
         colNoString += std::string(2 - colNoString.length(), ' ');
-    }
     if (endColNoString.length() < 2)
-    {
         endColNoString += std::string(2 - endColNoString.length(), ' ');
-    }
     // Construct the formatted string with colors
     return colorRed + "Token{type: " + colorReset + colorBlue + typeString + colorReset +
            colorRed + ", literal: " + colorGreen + "\"" + colorYellow + literalPaddingStr + literalString + literalPaddingStr + colorGreen + "\"" +
@@ -62,8 +52,7 @@ std::string token::Token::toString()
 
 std::shared_ptr<std::string> token::tokenTypeString(tokenType type)
 {
-    switch (type)
-    {
+    switch (type) {
     case tokenType::Identifier:
         return std::make_shared<std::string>("Identifier");
     case tokenType::Integer:
