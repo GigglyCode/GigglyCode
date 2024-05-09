@@ -10,7 +10,7 @@ The primary objective of GigglyCode is to facilitate inter-operability between d
 ## Syntax
 GigglyCode's syntax is heavily influenced by Python, with the key difference being the use of curly braces `{}` instead of indentation for block structuring. Here's a quick example to illustrate what GigglyCode looks like:
 
-```
+```python
 def fizzbuzz(start, stop, step) {
   for i in range(start, stop, step) {
     if i % 15 == 0 {
