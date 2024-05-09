@@ -75,8 +75,8 @@ namespace AST
     class integerLiteral : public expression
     {
     public:
-        int value;
-        integerLiteral(int value) : value(value) {}
+        long long int value;
+        integerLiteral(long long int value) : value(value) {}
         nodeType type() override { return nodeType::IntegerLiteral; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
@@ -84,8 +84,8 @@ namespace AST
     class floatLiteral : public expression
     {
     public:
-        float value;
-        floatLiteral(float value) : value(value) {}
+        double value;
+        floatLiteral(double value) : value(value) {}
         nodeType type() override { return nodeType::FloatLiteral; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
