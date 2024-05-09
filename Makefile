@@ -9,10 +9,12 @@ clean:
 	del *.obj
 
 $(exec): $(sources)
+	@if not exist build mkdir build
 	$(compiler) -I$(include) $(sources) /Fe$(exec) $(flags)
 	del *.obj
 
 gcc:
+	@if not exist build mkdir build
 	g++ -I$(include) $(sources) -o $(exec) $(flags_gcc)
 	del *.obj
 

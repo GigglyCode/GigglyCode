@@ -77,13 +77,13 @@ std::shared_ptr<AST::expression> parser::Parser::_parseGroupedExpression()
 
 std::shared_ptr<AST::expression> parser::Parser::_parseIntegerLiteral()
 {
-    auto expr = std::make_shared<AST::integerLiteral>(std::stoi(current_token->literal));
+    auto expr = std::make_shared<AST::integerLiteral>(std::stoll(current_token->literal));
     return expr;
 }
 
 std::shared_ptr<AST::expression> parser::Parser::_parseFloatLiteral()
 {
-    auto expr = std::make_shared<AST::floatLiteral>(std::stof(current_token->literal));
+    auto expr = std::make_shared<AST::floatLiteral>(std::stod(current_token->literal));
     return expr;
 }
 
