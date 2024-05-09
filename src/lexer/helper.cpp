@@ -82,8 +82,8 @@ bool Lexer::_isDigit(std::string character)
 
 bool Lexer::_isLetter(std::string character)
 {
-    return character >= "a" && character <= "z"
-        || character >= "A" && character <= "Z"
+    return (character >= "a" && character <= "z")
+        || (character >= "A" && character <= "Z")
         || character == "_";
 };
 
