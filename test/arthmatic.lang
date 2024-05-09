@@ -1,4 +1,1 @@
-X = (10 + 3) * 2
-x = "Hello, \nWorld!"
-y = """Hello, \tWorld!""
-cl
+(10 + 3) * 2;

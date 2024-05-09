@@ -1,15 +1,15 @@
 # GigglyCode
-A programing language, created by SohamTilekar for learning C++.
+GigglyCode is a unique programming language developed by SohamTilekar. It's designed as an educational tool for learning C++, but it's more than just a simple learning language.
 
-# Warning ⚠
-The Language Is Curently in the parsing Stage.
+## Current Status :construction:
+Please note that GigglyCode is currently in the parsing stage of development. It's not yet ready for production use.
 
-# Goal
-The goal of this programming language is to allow inter-operability between languages by having support inlining Python and C code (other programming languages might be supported as well).
+## Objective
+The primary objective of GigglyCode is to facilitate inter-operability between different programming languages. It achieves this by supporting inline Python and C code. Future versions may include support for additional languages.
 
-# Syntax
-Syntax is very similar to Python's, except for using curly braces instead of indentation.
-This example should give a taste on what it should look like:
+## Syntax
+GigglyCode's syntax is heavily influenced by Python, with the key difference being the use of curly braces `{}` instead of indentation for block structuring. Here's a quick example to illustrate what GigglyCode looks like:
+
 ```python
 def fizzbuzz(start, stop, step) {
   for i in range(start, stop, step) {
@@ -25,3 +25,4 @@ def fizzbuzz(start, stop, step) {
   }
 }
 ```
+Stay tuned for more updates as GigglyCode continues to evolve!
