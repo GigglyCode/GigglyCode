@@ -112,7 +112,7 @@ namespace token
         {
             this->col_no = end_col_no - literal.length();
         };
-        std::string toString();
+        std::string toString(bool color = true);
         void print();
     };
 } // namespace token
