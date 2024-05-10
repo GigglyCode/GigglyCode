@@ -88,6 +88,7 @@ namespace parser
 
     private:
         void _nextToken();
+        bool _currentTokenIs(token::tokenType type);
         bool _peekTokenIs(token::tokenType type);
         bool _expectPeek(token::tokenType type);
         void _peekError(token::tokenType type, token::tokenType expected_type, std::string suggestedFix = "");
@@ -97,6 +98,8 @@ namespace parser
         std::shared_ptr<AST::statement> _parseStatement();
 
         std::shared_ptr<AST::expressionStatement> _parseExpressionStatement();
+        std::shared_ptr<AST::statement> _parseVariableDeclaration();
+        std::shared_ptr<AST::statement> _parseVariableAssignment();
 
         std::shared_ptr<AST::expression> _parseExpression(PrecedenceType precedence);
 

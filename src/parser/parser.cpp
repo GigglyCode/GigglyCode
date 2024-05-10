@@ -26,6 +26,21 @@ std::shared_ptr<AST::program> parser::Parser::parseProgram()
 
 std::shared_ptr<AST::statement> parser::Parser::_parseStatement()
 {
+    if (this->_currentTokenIs(token::tokenType::Identifier))
+    {
+        if (this->_peekTokenIs(token::tokenType::Colon))
+        {
+            return this->_parseVariableDeclaration();
+        }
+        else if (this->_peekTokenIs(token::tokenType::Equals))
+        {
+            return this->_parseVariableAssignment();
+        }
+        else
+        {
+            return this->_parseExpressionStatement();
+        }
+    }
     return this->_parseExpressionStatement();
 }
 
@@ -37,6 +52,41 @@ std::shared_ptr<AST::expressionStatement> parser::Parser::_parseExpressionStatem
         this->_nextToken();
     }
     auto stmt = std::make_shared<AST::expressionStatement>(expr);
+    return stmt;
+}
+
+std::shared_ptr<AST::statement> parser::Parser::_parseVariableDeclaration()
+{
+    auto identifier = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    this->_nextToken();
+    this->_nextToken();
+    auto type = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    if (this->peek_token->type == token::tokenType::Semicolon)
+    {
+        this->_nextToken();
+        return std::make_shared<AST::variableDeclarationStatement>(identifier, type);
+    }
+    else if (this->_expectPeek(token::tokenType::Equals))
+    {
+        this->_nextToken();
+        auto expr = this->_parseExpression(PrecedenceType::LOWEST);
+        this->_nextToken();
+        return std::make_shared<AST::variableDeclarationStatement>(identifier, type, expr);
+    }
+    return nullptr;
+}
+
+std::shared_ptr<AST::statement> parser::Parser::_parseVariableAssignment()
+{
+    auto identifier = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    if (!this->_expectPeek(token::tokenType::Equals))
+    {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto expr = this->_parseExpression(PrecedenceType::LOWEST);
+    this->_nextToken();
+    auto stmt = std::make_shared<AST::variableAssignmentStatement>(identifier, expr);
     return stmt;
 }
 
@@ -100,6 +150,11 @@ void parser::Parser::_nextToken()
 {
     current_token = peek_token;
     peek_token = lexer->nextToken();
+}
+
+bool parser::Parser::_currentTokenIs(token::tokenType type)
+{
+    return current_token->type == type;
 }
 
 bool parser::Parser::_peekTokenIs(token::tokenType type)
