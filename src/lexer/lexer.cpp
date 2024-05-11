@@ -286,6 +286,14 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     {
         token = this->_newToken(token::tokenType::RightBrace, this->currentChar);
     }
+    else if (this->currentChar == "[")
+    {
+        token = this->_newToken(token::tokenType::LeftBracket, this->currentChar);
+    }
+    else if (this->currentChar == "]")
+    {
+        token = this->_newToken(token::tokenType::RightBracket, this->currentChar);
+    }
     else if (this->currentChar == ":")
     {
         token = this->_newToken(token::tokenType::Colon, this->currentChar);
