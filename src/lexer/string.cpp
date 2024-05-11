@@ -57,11 +57,11 @@ std::shared_ptr<std::string> Lexer::_readString(const std::string &quote)
         this->_readChar();
         if (this->currentChar == "")
         {
-            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal");
+            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal", "Add a closing " + quote + " to terminate the string literal");
         }
         else if (this->currentChar == "\n" && quote != "\"\"\"" && quote != "'''")
         {
-            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal");
+            errors::raiseSyntaxError(this->source, token::Token(token::tokenType::String, literal, this->lineNo, stColNo), "Unterminated string literal", "Add a closing " + quote + " to terminate the string literal");
         }
         else if (this->currentChar == "\\")
         {

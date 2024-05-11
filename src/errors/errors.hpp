@@ -25,7 +25,7 @@ namespace errors
         void raise(bool terminate = true) override;
     };
 
-    void raiseSyntaxError(std::string source, token::Token token, std::string message = "", std::string suggestedFix = "");
+    void raiseSyntaxError(const std::string &source, const token::Token &token, const std::string &message, const std::string &suggestedFix);
 
     class NoPrefixParseFnError : public Error
     {
