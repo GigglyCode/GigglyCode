@@ -12,8 +12,10 @@ std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
         return std::make_shared<std::string>("VariableDeclarationStatement");
     case nodeType::VariableAssignmentStatement:
         return std::make_shared<std::string>("VariableAssignmentStatement");
-    case nodeType::TypeStatement:
+    case nodeType::Type:
         return std::make_shared<std::string>("TypeStatement");
+    case nodeType::UnionType:
+        return std::make_shared<std::string>("UnionType");
     case nodeType::InfixedExpression:
         return std::make_shared<std::string>("InfixedExpression");
     case nodeType::IntegerLiteral:
@@ -28,6 +30,20 @@ std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
         return std::make_shared<std::string>("UNKNOWN");
     }
 };
+
+std::shared_ptr<nlohmann::json> AST::genericType::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["name"] = *this->name->toJSON();
+    jsonAst["generics"] = nlohmann::json::array();
+    for (auto &gen : this->generics)
+    {
+        jsonAst["generics"].push_back(*gen->toJSON());
+    }
+    return std::make_shared<nlohmann::json>(jsonAst);
+};
+
 std::shared_ptr<nlohmann::json> AST::program::toJSON()
 {
     auto jsonAst = nlohmann::json();

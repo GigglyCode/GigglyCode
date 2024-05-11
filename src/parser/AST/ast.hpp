@@ -14,7 +14,10 @@ namespace AST
         ExpressionStatement,
         VariableDeclarationStatement,
         VariableAssignmentStatement,
-        TypeStatement,
+
+        // Types
+        Type,
+        UnionType,
 
         // Expressions
         InfixedExpression,
@@ -48,6 +51,20 @@ namespace AST
     {
     };
 
+    class baseType : public node
+    {
+    };
+
+    class genericType : public baseType
+    {
+    public:
+        std::shared_ptr<expression> name;
+        std::vector<std::shared_ptr<baseType>> generics;
+        inline genericType(std::shared_ptr<expression> name, std::vector<std::shared_ptr<baseType>> generics) : name(name), generics(generics) {}
+        inline nodeType type() override { return nodeType::Type; };
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
     class program : public node
     {
     public:
@@ -69,9 +86,9 @@ namespace AST
     {
     public:
         std::shared_ptr<expression> name;
-        std::shared_ptr<expression> valueType;
+        std::shared_ptr<baseType> valueType;
         std::shared_ptr<expression> value;
-        inline variableDeclarationStatement(std::shared_ptr<expression> name, std::shared_ptr<expression> type, std::shared_ptr<expression> value = nullptr) : name(name), valueType(type), value(value) {}
+        inline variableDeclarationStatement(std::shared_ptr<expression> name, std::shared_ptr<baseType> type, std::shared_ptr<expression> value = nullptr) : name(name), valueType(type), value(value) {}
         inline nodeType type() override { return nodeType::VariableDeclarationStatement; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
@@ -85,16 +102,6 @@ namespace AST
         inline nodeType type() override { return nodeType::VariableAssignmentStatement; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
-
-    // class typeStatement : public statement
-    // {
-    // public:
-    //     std::shared_ptr<expression> name;
-    //     std::shared_ptr<expression> value;
-    //     inline typeStatement(std::shared_ptr<expression> name, std::shared_ptr<expression> value) : name(name), value(value) {}
-    //     inline nodeType type() override { return nodeType::TypeStatement; };
-    //     std::shared_ptr<nlohmann::json> toJSON() override;
-    // };
 
     class infixExpression : public expression
     {
