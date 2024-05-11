@@ -74,6 +74,7 @@ namespace parser
             {token::tokenType::Integer, std::bind(&Parser::_parseIntegerLiteral, this)},
             {token::tokenType::Float, std::bind(&Parser::_parseFloatLiteral, this)},
             {token::tokenType::String, std::bind(&Parser::_parseStringLiteral, this)},
+            {token::tokenType::Identifier, std::bind(&Parser::_parseIdentifier, this)},
             {token::tokenType::LeftParen, std::bind(&Parser::_parseGroupedExpression, this)},
         };
         std::unordered_map<token::tokenType, std::function<std::shared_ptr<AST::expression>(std::shared_ptr<AST::expression>)>> infixParseFns = {
@@ -110,6 +111,7 @@ namespace parser
         std::shared_ptr<AST::expression> _parseFloatLiteral();
         std::shared_ptr<AST::expression> _parseStringLiteral();
         std::shared_ptr<AST::expression> _parseGroupedExpression();
+        std::shared_ptr<AST::expression> _parseIdentifier();
         // std::shared_ptr<AST::expression> _parseIdentifier();
 
         std::shared_ptr<AST::expression> _parseInfixExpression(std::shared_ptr<AST::expression> leftNode);

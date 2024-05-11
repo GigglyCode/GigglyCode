@@ -122,7 +122,7 @@ void errors::SyntaxError::raise(bool terminate)
         exit(EXIT_FAILURE);
 }
 
-void errors::raiseSyntaxError(std::string source, token::Token token, std::string message, std::string suggestedFix)
+void errors::raiseSyntaxError(const std::string &source, const token::Token &token, const std::string &message, const std::string &suggestedFix)
 {
     SyntaxError error(source, token, message, suggestedFix);
     error.raise();

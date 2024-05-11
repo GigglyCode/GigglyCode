@@ -13,6 +13,9 @@ $(exec): $(sources)
 	$(compiler) -I$(include) $(sources) /Fe$(exec) $(flags)
 	del *.obj
 
+cppcheck:
+	cppcheck --enable=all --force --check-level=exhaustive --error-exitcode=1 src/ -i src/include/json.hpp -I src/ --suppress=missingIncludeSystem --suppress=unusedFunction --suppress=unmatchedSuppression
+
 gcc:
 	@if not exist build mkdir build
 	g++ -I$(include) $(sources) -o $(exec) $(flags_gcc)

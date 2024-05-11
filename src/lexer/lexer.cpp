@@ -1,7 +1,7 @@
 #include "lexer.hpp"
 #include "../errors/errors.hpp"
 
-Lexer::Lexer(std::string source)
+Lexer::Lexer(const std::string &source)
 {
     this->source = source;
 
@@ -277,14 +277,6 @@ std::shared_ptr<token::Token> Lexer::nextToken()
     else if (this->currentChar == ")")
     {
         token = this->_newToken(token::tokenType::RightParen, this->currentChar);
-    }
-    else if (this->currentChar == "{")
-    {
-        token = this->_newToken(token::tokenType::LeftBrace, this->currentChar);
-    }
-    else if (this->currentChar == "}")
-    {
-        token = this->_newToken(token::tokenType::RightBrace, this->currentChar);
     }
     else if (this->currentChar == "[")
     {

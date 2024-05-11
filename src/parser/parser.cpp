@@ -184,6 +184,12 @@ std::shared_ptr<AST::expression> parser::Parser::_parseStringLiteral()
     return expr;
 }
 
+std::shared_ptr<AST::expression> parser::Parser::_parseIdentifier()
+{
+    auto expr = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    return expr;
+}
+
 void parser::Parser::_nextToken()
 {
     current_token = peek_token;

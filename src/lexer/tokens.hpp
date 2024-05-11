@@ -107,12 +107,9 @@ namespace token
 
         inline Token(){};
         inline Token(tokenType type, int line_no, int col_no)
-            : type(type), line_no(line_no), end_col_no(col_no){};
+            : type(type), line_no(line_no), end_col_no(col_no), col_no(col_no){};
         inline Token(tokenType type, std::string literal, int line_no, int col_no)
-            : type(type), literal(literal), line_no(line_no), end_col_no(col_no)
-        {
-            this->col_no = end_col_no - literal.length();
-        };
+            : type(type), literal(literal), line_no(line_no), end_col_no(col_no), col_no(col_no - literal.length()){};
         std::string toString(bool color = true);
         void print();
     };

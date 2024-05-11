@@ -44,7 +44,7 @@ std::shared_ptr<token::Token> Lexer::_readNumber()
             dot_count++;
             if (dot_count > 1)
             {
-                printf("Invalid number at line %d, column %d\n", this->lineNo, this->colNo);
+                printf("Invalid number at line %u, column %i\n", this->lineNo, this->colNo);
                 return this->_newToken(token::tokenType::Illegal, this->currentChar);
             }
         }
@@ -94,12 +94,12 @@ void Lexer::_skipWhitespace()
     }
 }
 
-bool Lexer::_isDigit(std::string character)
+bool Lexer::_isDigit(const std::string &character)
 {
     return character >= "0" && character <= "9";
 };
 
-bool Lexer::_isLetter(std::string character)
+bool Lexer::_isLetter(const std::string &character)
 {
     return (character >= "a" && character <= "z") || (character >= "A" && character <= "Z") || character == "_";
 };
