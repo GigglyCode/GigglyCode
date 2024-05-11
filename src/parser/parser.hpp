@@ -73,6 +73,8 @@ namespace parser
         std::unordered_map<token::tokenType, std::function<std::shared_ptr<AST::expression>()>> prefixParseFns = {
             {token::tokenType::Integer, std::bind(&Parser::_parseIntegerLiteral, this)},
             {token::tokenType::Float, std::bind(&Parser::_parseFloatLiteral, this)},
+            {token::tokenType::String, std::bind(&Parser::_parseStringLiteral, this)},
+            {token::tokenType::Identifier, std::bind(&Parser::_parseIdentifier, this)},
             {token::tokenType::LeftParen, std::bind(&Parser::_parseGroupedExpression, this)},
         };
         std::unordered_map<token::tokenType, std::function<std::shared_ptr<AST::expression>(std::shared_ptr<AST::expression>)>> infixParseFns = {
@@ -88,6 +90,7 @@ namespace parser
 
     private:
         void _nextToken();
+        bool _currentTokenIs(token::tokenType type);
         bool _peekTokenIs(token::tokenType type);
         bool _expectPeek(token::tokenType type);
         void _peekError(token::tokenType type, token::tokenType expected_type, std::string suggestedFix = "");
@@ -97,14 +100,19 @@ namespace parser
         std::shared_ptr<AST::statement> _parseStatement();
 
         std::shared_ptr<AST::expressionStatement> _parseExpressionStatement();
+        std::shared_ptr<AST::statement> _parseVariableDeclaration();
+        std::shared_ptr<AST::statement> _parseVariableAssignment();
+
+        std::shared_ptr<AST::baseType> _parseType();
 
         std::shared_ptr<AST::expression> _parseExpression(PrecedenceType precedence);
 
         std::shared_ptr<AST::expression> _parseIntegerLiteral();
         std::shared_ptr<AST::expression> _parseFloatLiteral();
+        std::shared_ptr<AST::expression> _parseStringLiteral();
         std::shared_ptr<AST::expression> _parseGroupedExpression();
+        std::shared_ptr<AST::expression> _parseIdentifier();
         // std::shared_ptr<AST::expression> _parseIdentifier();
-        // std::shared_ptr<AST::expression> _parseStringLiteral();
 
         std::shared_ptr<AST::expression> _parseInfixExpression(std::shared_ptr<AST::expression> leftNode);
     }; // class Parser

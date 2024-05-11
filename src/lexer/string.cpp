@@ -25,7 +25,7 @@ std::shared_ptr<std::string> Lexer::_isString()
     return std::make_shared<std::string>("");
 }
 
-std::shared_ptr<std::string> Lexer::_readString(std::string quote)
+std::shared_ptr<std::string> Lexer::_readString(const std::string &quote)
 {
     std::string str = "";
     std::string literal = quote;

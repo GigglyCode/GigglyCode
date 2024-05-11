@@ -75,12 +75,12 @@ void Lexer::_skipWhitespace()
     }
 }
 
-bool Lexer::_isDigit(std::string character)
+bool Lexer::_isDigit(const std::string &character)
 {
     return character >= "0" && character <= "9";
 };
 
-bool Lexer::_isLetter(std::string character)
+bool Lexer::_isLetter(const std::string &character)
 {
     return (character >= "a" && character <= "z")
         || (character >= "A" && character <= "Z")

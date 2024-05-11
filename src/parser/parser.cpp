@@ -23,6 +23,21 @@ std::shared_ptr<AST::program> parser::Parser::parseProgram()
 
 std::shared_ptr<AST::statement> parser::Parser::_parseStatement()
 {
+    if (this->_currentTokenIs(token::tokenType::Identifier))
+    {
+        if (this->_peekTokenIs(token::tokenType::Colon))
+        {
+            return this->_parseVariableDeclaration();
+        }
+        else if (this->_peekTokenIs(token::tokenType::Equals))
+        {
+            return this->_parseVariableAssignment();
+        }
+        else
+        {
+            return this->_parseExpressionStatement();
+        }
+    }
     return this->_parseExpressionStatement();
 }
 
@@ -32,6 +47,73 @@ std::shared_ptr<AST::expressionStatement> parser::Parser::_parseExpressionStatem
     if (this->_peekTokenIs(token::tokenType::Semicolon))
         this->_nextToken();
     auto stmt = std::make_shared<AST::expressionStatement>(expr);
+    return stmt;
+}
+
+std::shared_ptr<AST::statement> parser::Parser::_parseVariableDeclaration()
+{
+    auto identifier = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    this->_nextToken();
+    this->_nextToken();
+    auto type = this->_parseType();
+    if (this->peek_token->type == token::tokenType::Semicolon)
+    {
+        this->_nextToken();
+        return std::make_shared<AST::variableDeclarationStatement>(identifier, type);
+    }
+    else if (this->_expectPeek(token::tokenType::Equals))
+    {
+        this->_nextToken();
+        auto expr = this->_parseExpression(PrecedenceType::LOWEST);
+        this->_nextToken();
+        return std::make_shared<AST::variableDeclarationStatement>(identifier, type, expr);
+    }
+    return nullptr;
+}
+
+std::shared_ptr<AST::baseType> parser::Parser::_parseType()
+{
+    std::shared_ptr<AST::expression> name;
+    if (this->_currentTokenIs(token::tokenType::Integer))
+        name = std::make_shared<AST::integerLiteral>(std::stoll(this->current_token->literal));
+    else if (this->_currentTokenIs(token::tokenType::Float))
+        name = std::make_shared<AST::floatLiteral>(std::stod(this->current_token->literal));
+    else if (this->_currentTokenIs(token::tokenType::String))
+        name = std::make_shared<AST::stringLiteral>(this->current_token->literal);
+    else if (this->_currentTokenIs(token::tokenType::RawString))
+        name = std::make_shared<AST::stringLiteral>(this->current_token->literal);
+    else
+        name = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    std::vector<std::shared_ptr<AST::baseType>> generics;
+    if (this->_peekTokenIs(token::tokenType::LeftBracket))
+    {
+        this->_nextToken();
+        this->_nextToken();
+        while (this->current_token->type != token::tokenType::RightBracket)
+        {
+            auto generic = this->_parseType();
+            generics.push_back(generic);
+            this->_nextToken();
+            if (this->current_token->type == token::tokenType::Comma)
+            {
+                this->_nextToken();
+            }
+        }
+    }
+    return std::make_shared<AST::genericType>(name, generics);
+}
+
+std::shared_ptr<AST::statement> parser::Parser::_parseVariableAssignment()
+{
+    auto identifier = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    if (!this->_expectPeek(token::tokenType::Equals))
+    {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto expr = this->_parseExpression(PrecedenceType::LOWEST);
+    this->_nextToken();
+    auto stmt = std::make_shared<AST::variableAssignmentStatement>(identifier, expr);
     return stmt;
 }
 
@@ -87,10 +169,27 @@ std::shared_ptr<AST::expression> parser::Parser::_parseFloatLiteral()
     return expr;
 }
 
+std::shared_ptr<AST::expression> parser::Parser::_parseStringLiteral()
+{
+    auto expr = std::make_shared<AST::stringLiteral>(current_token->literal);
+    return expr;
+}
+
+std::shared_ptr<AST::expression> parser::Parser::_parseIdentifier()
+{
+    auto expr = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    return expr;
+}
+
 void parser::Parser::_nextToken()
 {
     current_token = peek_token;
     peek_token = lexer->nextToken();
+}
+
+bool parser::Parser::_currentTokenIs(token::tokenType type)
+{
+    return current_token->type == type;
 }
 
 bool parser::Parser::_peekTokenIs(token::tokenType type)

@@ -2,28 +2,30 @@
 #include <unordered_map>
 #include "./tokens.hpp"
 
-std::string token::Token::toString()
+std::string token::Token::toString(bool color)
 {
     // Define ANSI escape codes for colors
-    static const std::string colorReset = "\x1b[0m";
-    static const std::string colorRed = "\x1b[91m";     // Red
-    static const std::string colorYellow = "\x1b[93m";  // Yellow
-    static const std::string colorGreen = "\x1b[92m";   // Green
-    static const std::string colorBlue = "\x1b[94m";    // Blue
-    static const std::string colorMagenta = "\x1b[95m"; // Magenta
+    const std::string colorReset = "\x1b[0m";
+    const std::string colorRed = "\x1b[91m";
+    const std::string colorYellow = "\x1b[93m";
+    const std::string colorGreen = "\x1b[92m";
+    const std::string colorBlue = "\x1b[94m";
+    const std::string colorMagenta = "\x1b[95m";
 
     // Convert variables to strings
     std::string typeString = *tokenTypeString(type);
     std::string literalString = literal;
-    static const std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
+    std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
 
-    for (const auto &replacement : replacements) {
+    // Replace special characters in literalString
+    for (auto &replacement : replacements) {
         size_t pos = literalString.find(replacement.first);
         while (pos != std::string::npos) {
             literalString.replace(pos, 1, replacement.second);
             pos = literalString.find(replacement.first, pos + replacement.second.size());
         }
     }
+
     std::string lineNoString = std::to_string(line_no);
     std::string colNoString = std::to_string(col_no);
     std::string endColNoString = std::to_string(end_col_no);
@@ -41,13 +43,14 @@ std::string token::Token::toString()
         colNoString += std::string(2 - colNoString.length(), ' ');
     if (endColNoString.length() < 2)
         endColNoString += std::string(2 - endColNoString.length(), ' ');
+
     // Construct the formatted string with colors
-    return colorRed + "Token{type: " + colorReset + colorBlue + typeString + colorReset +
-           colorRed + ", literal: " + colorGreen + "\"" + colorYellow + literalPaddingStr + literalString + literalPaddingStr + colorGreen + "\"" +
-           colorRed + ", line_no: " + colorReset + colorGreen + lineNoString + colorReset +
-           colorRed + ", col_no: " + colorReset + colorMagenta + colNoString + colorReset +
-           colorRed + ", end_col_no: " + colorReset + colorMagenta + endColNoString + colorReset +
-           colorRed + "};" + colorReset;
+    return (color ? colorRed : "") + "Token{type: " + (color ? colorReset + colorBlue : "") + typeString + (color ? colorRed : "") +
+           ", literal: " + (color ? colorGreen + "\"" + colorYellow : "") + literalPaddingStr + literalString + literalPaddingStr + (color ? colorGreen + "\"" : "") +
+           ", line_no: " + (color ? colorReset + colorGreen : "") + lineNoString + (color ? colorReset : "") +
+           ", col_no: " + (color ? colorReset + colorMagenta : "") + colNoString + (color ? colorReset : "") +
+           ", end_col_no: " + (color ? colorReset + colorMagenta : "") + endColNoString + (color ? colorReset : "") +
+           (color ? colorRed : "") + "};" + (color ? colorReset : "");
 }
 
 std::shared_ptr<std::string> token::tokenTypeString(tokenType type)

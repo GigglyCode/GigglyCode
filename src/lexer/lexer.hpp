@@ -15,7 +15,7 @@ public:
     unsigned int lineNo;
     int colNo;
     std::string currentChar;
-    Lexer(std::string source);
+    explicit Lexer(const std::string &source);
     std::shared_ptr<token::Token> nextToken();
 
 private:
@@ -25,10 +25,10 @@ private:
     void _skipWhitespace();
     std::shared_ptr<token::Token> _newToken(token::tokenType type, std::string currentChar);
     std::shared_ptr<token::Token> _readNumber();
-    bool _isDigit(std::string character);
-    bool _isLetter(std::string character);
+    bool _isDigit(const std::string &character);
+    bool _isLetter(const std::string &character);
     std::shared_ptr<std::string> _isString();
     std::shared_ptr<std::string> _readIdentifier();
-    std::shared_ptr<std::string> _readString(std::string quote);
+    std::shared_ptr<std::string> _readString(const std::string &quote);
 };
 #endif

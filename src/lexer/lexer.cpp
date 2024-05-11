@@ -1,7 +1,7 @@
 #include "lexer.hpp"
 #include "../errors/errors.hpp"
 
-Lexer::Lexer(std::string source)
+Lexer::Lexer(const std::string &source)
 {
     this->source = source;
     this->pos = -1;

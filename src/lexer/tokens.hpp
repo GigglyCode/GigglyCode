@@ -1,6 +1,7 @@
 #ifndef TOKENS_HPP
 #define TOKENS_HPP
 #include <string>
+#include <unordered_map>
 #include <iostream>
 #include <memory>
 
@@ -24,7 +25,8 @@ namespace token
         Identifier, // Identifier token [a-zA-Z_][a-zA-Z0-9_]*
         Integer,    // Integer token [0-9]+
         Float,      // Float token [0-9]+.[0-9]+
-        String,     // String token ".*"
+        String,     // String token "[\"'].*[\"']" | "'''[^']*'''" | '"""[^"]*"""'
+        RawString,  // Raw String token "r[\"'].*[\"']" | "R[\"'].*[\"']" | "r'''[^']*'''" | "R'''[^']*'''" | '"""[^"]*"""' | 'R"""[^"]*"""'
 
         // Assignment Operators
         PlusEqual,          // Addition assignment +=
@@ -105,13 +107,10 @@ namespace token
 
         inline Token(){};
         inline Token(tokenType type, int line_no, int col_no)
-            : type(type), line_no(line_no), end_col_no(col_no){};
+            : type(type), line_no(line_no), end_col_no(col_no), col_no(col_no){};
         inline Token(tokenType type, std::string literal, int line_no, int col_no)
-            : type(type), literal(literal), line_no(line_no), end_col_no(col_no)
-        {
-            this->col_no = end_col_no - literal.length();
-        };
-        std::string toString();
+            : type(type), literal(literal), line_no(line_no), end_col_no(col_no), col_no(col_no - literal.length()){};
+        std::string toString(bool color = true);
         void print();
     };
 } // namespace token
