@@ -14,6 +14,9 @@ namespace AST
         ExpressionStatement,
         VariableDeclarationStatement,
         VariableAssignmentStatement,
+        FunctionStatement,
+        BlockStatement,
+        ReturnStatement,
 
         // Types
         Type,
@@ -79,6 +82,45 @@ namespace AST
         std::shared_ptr<expression> expr;
         inline expressionStatement(std::shared_ptr<expression> expr = nullptr) : expr(expr) {}
         inline nodeType type() override { return nodeType::ExpressionStatement; };
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
+    class blockStatement : public statement
+    {
+    public:
+        std::vector<std::shared_ptr<statement>> statements;
+        inline nodeType type() override { return nodeType::BlockStatement; };
+        inline blockStatement(std::vector<std::shared_ptr<statement>> statements = {}) : statements(statements) {}
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
+    class returnStatement : public statement
+    {
+    public:
+        std::shared_ptr<expression> value;
+        inline returnStatement(std::shared_ptr<expression> value = nullptr) : value(value) {}
+        inline nodeType type() override { return nodeType::ReturnStatement; };
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
+    class functionStatement : public statement
+    {
+    public:
+        class parameter : public node
+        {
+        public:
+            std::shared_ptr<expression> name;
+            std::shared_ptr<baseType> valueType;
+            inline parameter(std::shared_ptr<expression> name, std::shared_ptr<baseType> type) : name(name), valueType(type) {}
+            inline nodeType type() override { return nodeType::Type; };
+            std::shared_ptr<nlohmann::json> toJSON() override;
+        };
+        std::shared_ptr<expression> name;
+        std::vector<std::shared_ptr<parameter>> parameters;
+        std::shared_ptr<baseType> returnType;
+        std::shared_ptr<statement> body;
+        inline functionStatement(std::shared_ptr<expression> name, std::vector<std::shared_ptr<parameter>> parameters, std::shared_ptr<baseType> returnType, std::shared_ptr<statement> body) : name(name), parameters(parameters), returnType(returnType), body(body) {}
+        inline nodeType type() override { return nodeType::FunctionStatement; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
 

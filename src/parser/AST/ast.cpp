@@ -11,6 +11,12 @@ std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
         return std::make_shared<std::string>("VariableDeclarationStatement");
     case nodeType::VariableAssignmentStatement:
         return std::make_shared<std::string>("VariableAssignmentStatement");
+    case nodeType::FunctionStatement:
+        return std::make_shared<std::string>("FunctionStatement");
+    case nodeType::BlockStatement:
+        return std::make_shared<std::string>("BlockStatement");
+    case nodeType::ReturnStatement:
+        return std::make_shared<std::string>("ReturnStatement");
     case nodeType::Type:
         return std::make_shared<std::string>("TypeStatement");
     case nodeType::UnionType:
@@ -59,6 +65,50 @@ std::shared_ptr<nlohmann::json> AST::expressionStatement::toJSON()
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["expression"] = this->expr == nullptr ? nullptr : *expr->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::blockStatement::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["statements"] = nlohmann::json::array();
+    for (auto &stmt : this->statements)
+    {
+        jsonAst["statements"].push_back(*stmt->toJSON());
+    }
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::returnStatement::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["value"] = this->value == nullptr ? nullptr : *(this->value->toJSON());
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::functionStatement::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["name"] = *this->name->toJSON();
+    jsonAst["parameters"] = nlohmann::json::array();
+    for (auto &param : this->parameters)
+    {
+        jsonAst["parameters"].push_back(*param->toJSON());
+    }
+    jsonAst["return_type"] = *this->returnType->toJSON();
+    jsonAst["body"] = *this->body->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::functionStatement::parameter::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["name"] = *this->name->toJSON();
+    jsonAst["type"] = *this->valueType->toJSON();
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 

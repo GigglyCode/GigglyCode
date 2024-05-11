@@ -102,6 +102,9 @@ namespace parser
         std::shared_ptr<AST::expressionStatement> _parseExpressionStatement();
         std::shared_ptr<AST::statement> _parseVariableDeclaration();
         std::shared_ptr<AST::statement> _parseVariableAssignment();
+        std::shared_ptr<AST::returnStatement> _parseReturnStatement();
+        std::shared_ptr<AST::functionStatement> _parseFunctionStatement();
+        std::shared_ptr<AST::blockStatement> _parseBlockStatement();
 
         std::shared_ptr<AST::baseType> _parseType();
 

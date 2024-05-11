@@ -102,9 +102,8 @@ namespace token
         tokenType type;
         std::string literal;
         int line_no;
-        int col_no;
         int end_col_no;
-
+        int col_no;
         inline Token(){};
         inline Token(tokenType type, int line_no, int col_no)
             : type(type), line_no(line_no), end_col_no(col_no), col_no(col_no){};
