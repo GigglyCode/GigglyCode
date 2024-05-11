@@ -5,9 +5,9 @@
 #include "parser/parser.hpp"
 
 #define DEBUG_LEXER false
-#define DEBUG_PARSER true
+#define DEBUG_PARSER false
 #define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output.json"
-#define DEBUG_PARSER_OUTPUT_PATH ""
+#define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +25,19 @@ int main(int argc, char *argv[])
     {
         std::cout << "=========== Lexer Debug ===========" << std::endl;
         Lexer debugLexer(fileContent);
+        if (!std::string(DEBUG_LEXER_OUTPUT_PATH).empty())
+        {
+            std::ofstream file_C(DEBUG_LEXER_OUTPUT_PATH, std::ios::trunc); // Open file_C in truncate mode
+            if (file_C.is_open())
+            {
+                file_C << ""; // Clear file_C
+                file_C.close();
+            }
+            else
+            {
+                std::cout << "Unable to open file_C";
+            }
+        }
         while (debugLexer.currentChar != "")
         {
             std::shared_ptr<token::Token> token = debugLexer.nextToken();
@@ -55,7 +68,7 @@ int main(int argc, char *argv[])
         auto program = p.parseProgram();
         if (!std::string(DEBUG_PARSER_OUTPUT_PATH).empty())
         {
-            std::ofstream file(DEBUG_PARSER_OUTPUT_PATH, std::ios::app); // Open file in append mode
+            std::ofstream file(DEBUG_PARSER_OUTPUT_PATH, std::ios::trunc); // Open file in append mode
             if (file.is_open())
             {
                 file << program->toJSON()->dump(4) << std::endl;
@@ -76,8 +89,8 @@ int main(int argc, char *argv[])
         }
         if (p.errors.size() > 0)
         {
-            return EXIT_FAILURE;
+            return 1;
         }
     }
-    return EXIT_SUCCESS;
+    return 0;
 }
