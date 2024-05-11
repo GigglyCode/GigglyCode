@@ -2,10 +2,10 @@
 #include <fstream>
 #include <string>
 #include "lexer/lexer.hpp"
-#include "parser/parser.hpp"
+// #include "parser/parser.hpp"
 
 #define DEBUG_LEXER true
-#define DEBUG_PARSER true
+#define DEBUG_PARSER false
 #define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output.json"
 #define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
 
@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+/*
     Lexer l(fileContent);
     parser::Parser p(std::make_shared<Lexer>(l));
     if (DEBUG_PARSER)
@@ -92,5 +93,6 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+*/
     return 0;
 }
