@@ -101,6 +101,8 @@ namespace parser
         std::shared_ptr<AST::statement> _parseVariableDeclaration();
         std::shared_ptr<AST::statement> _parseVariableAssignment();
 
+        std::shared_ptr<AST::baseType> _parseType();
+
         std::shared_ptr<AST::expression> _parseExpression(PrecedenceType precedence);
 
         std::shared_ptr<AST::expression> _parseIntegerLiteral();

@@ -60,7 +60,7 @@ std::shared_ptr<AST::statement> parser::Parser::_parseVariableDeclaration()
     auto identifier = std::make_shared<AST::identifierLiteral>(current_token->literal);
     this->_nextToken();
     this->_nextToken();
-    auto type = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    auto type = this->_parseType();
     if (this->peek_token->type == token::tokenType::Semicolon)
     {
         this->_nextToken();
@@ -74,6 +74,34 @@ std::shared_ptr<AST::statement> parser::Parser::_parseVariableDeclaration()
         return std::make_shared<AST::variableDeclarationStatement>(identifier, type, expr);
     }
     return nullptr;
+}
+
+std::shared_ptr<AST::baseType> parser::Parser::_parseType()
+{
+    std::shared_ptr<AST::expression> name;
+    if (this->_currentTokenIs(token::tokenType::Integer))
+        name = std::make_shared<AST::integerLiteral>(std::stoll(this->current_token->literal));
+    else if (this->_currentTokenIs(token::tokenType::Float))
+        name = std::make_shared<AST::floatLiteral>(std::stod(this->current_token->literal));
+    else
+        name = std::make_shared<AST::identifierLiteral>(current_token->literal);
+    std::vector<std::shared_ptr<AST::baseType>> generics;
+    if (this->_peekTokenIs(token::tokenType::LeftBracket))
+    {
+        this->_nextToken();
+        this->_nextToken();
+        while (this->current_token->type != token::tokenType::RightBracket)
+        {
+            auto generic = this->_parseType();
+            generics.push_back(generic);
+            this->_nextToken();
+            if (this->current_token->type == token::tokenType::Comma)
+            {
+                this->_nextToken();
+            }
+        }
+    }
+    return std::make_shared<AST::genericType>(name, generics);
 }
 
 std::shared_ptr<AST::statement> parser::Parser::_parseVariableAssignment()
