@@ -25,7 +25,8 @@ namespace token
         Identifier, // Identifier token [a-zA-Z_][a-zA-Z0-9_]*
         Integer,    // Integer token [0-9]+
         Float,      // Float token [0-9]+.[0-9]+
-        String,     // String token ".*"
+        String,     // String token "[\"'].*[\"']" | "'''[^']*'''" | '"""[^"]*"""'
+        RawString,  // Raw String token "r[\"'].*[\"']" | "R[\"'].*[\"']" | "r'''[^']*'''" | "R'''[^']*'''" | '"""[^"]*"""' | 'R"""[^"]*"""'
 
         // Assignment Operators
         PlusEqual,          // Addition assignment +=

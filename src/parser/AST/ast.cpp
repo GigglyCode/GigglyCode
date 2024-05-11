@@ -109,6 +109,14 @@ std::shared_ptr<nlohmann::json> AST::floatLiteral::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
+std::shared_ptr<nlohmann::json> AST::stringLiteral::toJSON()
+{
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["value"] = this->value;
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
 std::shared_ptr<nlohmann::json> AST::identifierLiteral::toJSON()
 {
     auto jsonAst = nlohmann::json();

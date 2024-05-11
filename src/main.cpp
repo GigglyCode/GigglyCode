@@ -4,8 +4,8 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
-#define DEBUG_LEXER false
-#define DEBUG_PARSER false
+#define DEBUG_LEXER true
+#define DEBUG_PARSER true
 #define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output.json"
 #define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
 

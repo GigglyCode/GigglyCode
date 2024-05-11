@@ -83,6 +83,10 @@ std::shared_ptr<AST::baseType> parser::Parser::_parseType()
         name = std::make_shared<AST::integerLiteral>(std::stoll(this->current_token->literal));
     else if (this->_currentTokenIs(token::tokenType::Float))
         name = std::make_shared<AST::floatLiteral>(std::stod(this->current_token->literal));
+    else if (this->_currentTokenIs(token::tokenType::String))
+        name = std::make_shared<AST::stringLiteral>(this->current_token->literal);
+    else if (this->_currentTokenIs(token::tokenType::RawString))
+        name = std::make_shared<AST::stringLiteral>(this->current_token->literal);
     else
         name = std::make_shared<AST::identifierLiteral>(current_token->literal);
     std::vector<std::shared_ptr<AST::baseType>> generics;
@@ -171,6 +175,12 @@ std::shared_ptr<AST::expression> parser::Parser::_parseIntegerLiteral()
 std::shared_ptr<AST::expression> parser::Parser::_parseFloatLiteral()
 {
     auto expr = std::make_shared<AST::floatLiteral>(std::stod(current_token->literal));
+    return expr;
+}
+
+std::shared_ptr<AST::expression> parser::Parser::_parseStringLiteral()
+{
+    auto expr = std::make_shared<AST::stringLiteral>(current_token->literal);
     return expr;
 }
 

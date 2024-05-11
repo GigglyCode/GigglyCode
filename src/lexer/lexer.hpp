@@ -28,7 +28,9 @@ private:
     bool _isDigit(std::string character);
     bool _isLetter(std::string character);
     std::shared_ptr<std::string> _isString();
+    std::shared_ptr<std::string> _isRawString();
     std::shared_ptr<std::string> _readIdentifier();
     std::shared_ptr<std::string> _readString(std::string quote);
+    std::shared_ptr<std::string> _readRawString(std::string quote);
 };
 #endif

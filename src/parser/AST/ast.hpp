@@ -132,6 +132,15 @@ namespace AST
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
 
+    class stringLiteral : public expression
+    {
+    public:
+        std::string value;
+        inline stringLiteral(std::string value) : value(value) {}
+        inline nodeType type() override { return nodeType::StringLiteral; };
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
     class identifierLiteral : public expression
     {
     public:
