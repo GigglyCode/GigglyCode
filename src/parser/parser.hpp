@@ -10,135 +10,110 @@
 
 namespace parser {
 
-enum class PrecedenceType {
-    LOWEST,
-    ASSIGN,        // =, +=, -=, *=, /=, %=
-    COMPARISION,   // >, <, >=, <=, ==, !=
-    SUM,           // +
-    PRODUCT,       // *
-    Exponent,      // **
-    PREFIX,        // -X or !X
-    CALL,          // myFunction(X)
-    INDEX,         // array[index]
-    MEMBER_ACCESS, // object.member
-    POSTFIX        // X++
-};
-
-static const std::unordered_map<token::tokenType, PrecedenceType>
-    token_precedence = {
-        {token::tokenType::Illegal, PrecedenceType::LOWEST},
-        {token::tokenType::GreaterThan, PrecedenceType::COMPARISION},
-        {token::tokenType::LessThan, PrecedenceType::COMPARISION},
-        {token::tokenType::GreaterThanOrEqual, PrecedenceType::COMPARISION},
-        {token::tokenType::LessThanOrEqual, PrecedenceType::COMPARISION},
-        {token::tokenType::EqualEqual, PrecedenceType::COMPARISION},
-        {token::tokenType::NotEquals, PrecedenceType::COMPARISION},
-        {token::tokenType::PlusEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::DashEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::AsteriskEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::PercentEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::CaretEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::ForwardSlashEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::BackwardSlashEqual, PrecedenceType::ASSIGN},
-        {token::tokenType::Equals, PrecedenceType::ASSIGN},
-        {token::tokenType::Is, PrecedenceType::ASSIGN},
-        {token::tokenType::Increment, PrecedenceType::POSTFIX},
-        {token::tokenType::Decrement, PrecedenceType::POSTFIX},
-        {token::tokenType::BitwiseAnd, PrecedenceType::COMPARISION},
-        {token::tokenType::BitwiseOr, PrecedenceType::COMPARISION},
-        {token::tokenType::BitwiseXor, PrecedenceType::COMPARISION},
-        {token::tokenType::BitwiseNot, PrecedenceType::PREFIX},
-        {token::tokenType::LeftShift, PrecedenceType::COMPARISION},
-        {token::tokenType::RightShift, PrecedenceType::COMPARISION},
-        {token::tokenType::Dot, PrecedenceType::MEMBER_ACCESS},
-        {token::tokenType::Ellipsis, PrecedenceType::LOWEST},
-        {token::tokenType::Plus, PrecedenceType::SUM},
-        {token::tokenType::Dash, PrecedenceType::SUM},
-        {token::tokenType::Asterisk, PrecedenceType::PRODUCT},
-        {token::tokenType::Percent, PrecedenceType::PRODUCT},
-        {token::tokenType::AsteriskAsterisk, PrecedenceType::Exponent},
-        {token::tokenType::ForwardSlash, PrecedenceType::PRODUCT},
-        {token::tokenType::BackwardSlash, PrecedenceType::PRODUCT},
-        {token::tokenType::EndOfFile, PrecedenceType::LOWEST},
-};
-
-class Parser {
-  public:
-    std::shared_ptr<Lexer> lexer;
-    std::shared_ptr<token::Token> current_token;
-    std::shared_ptr<token::Token> peek_token;
-    std::vector<std::shared_ptr<errors::Error>> errors;
-    std::unordered_map<token::tokenType,
-                       std::function<std::shared_ptr<AST::expression>()>>
-        prefixParseFns = {
-            {token::tokenType::Integer,
-             std::bind(&Parser::_parseIntegerLiteral, this)},
-            {token::tokenType::Float,
-             std::bind(&Parser::_parseFloatLiteral, this)},
-            {token::tokenType::String,
-             std::bind(&Parser::_parseStringLiteral, this)},
-            {token::tokenType::Identifier,
-             std::bind(&Parser::_parseIdentifier, this)},
-            {token::tokenType::LeftParen,
-             std::bind(&Parser::_parseGroupedExpression, this)},
+    enum class PrecedenceType {
+        LOWEST,
+        ASSIGN,        // =, +=, -=, *=, /=, %=
+        COMPARISION,   // >, <, >=, <=, ==, !=
+        SUM,           // +
+        PRODUCT,       // *
+        Exponent,      // **
+        PREFIX,        // -X or !X
+        CALL,          // myFunction(X)
+        INDEX,         // array[index]
+        MEMBER_ACCESS, // object.member
+        POSTFIX        // X++
     };
-    std::unordered_map<token::tokenType,
-                       std::function<std::shared_ptr<AST::expression>(
-                           std::shared_ptr<AST::expression>)>>
-        infixParseFns = {
-            {token::tokenType::Plus, std::bind(&Parser::_parseInfixExpression,
-                                               this, std::placeholders::_1)},
-            {token::tokenType::Dash, std::bind(&Parser::_parseInfixExpression,
-                                               this, std::placeholders::_1)},
-            {token::tokenType::Asterisk,
-             std::bind(&Parser::_parseInfixExpression, this,
-                       std::placeholders::_1)},
-            {token::tokenType::ForwardSlash,
-             std::bind(&Parser::_parseInfixExpression, this,
-                       std::placeholders::_1)},
-            {token::tokenType::Percent,
-             std::bind(&Parser::_parseInfixExpression, this,
-                       std::placeholders::_1)},
-            {token::tokenType::AsteriskAsterisk,
-             std::bind(&Parser::_parseInfixExpression, this,
-                       std::placeholders::_1)},
+
+    static const std::unordered_map<token::TokenType, PrecedenceType> token_precedence = {
+        {token::TokenType::Illegal, PrecedenceType::LOWEST},
+        {token::TokenType::GreaterThan, PrecedenceType::COMPARISION},
+        {token::TokenType::LessThan, PrecedenceType::COMPARISION},
+        {token::TokenType::GreaterThanOrEqual, PrecedenceType::COMPARISION},
+        {token::TokenType::LessThanOrEqual, PrecedenceType::COMPARISION},
+        {token::TokenType::EqualEqual, PrecedenceType::COMPARISION},
+        {token::TokenType::NotEquals, PrecedenceType::COMPARISION},
+        {token::TokenType::PlusEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::DashEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::AsteriskEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::PercentEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::CaretEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::ForwardSlashEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::BackwardSlashEqual, PrecedenceType::ASSIGN},
+        {token::TokenType::Equals, PrecedenceType::ASSIGN},
+        {token::TokenType::Is, PrecedenceType::ASSIGN},
+        {token::TokenType::Increment, PrecedenceType::POSTFIX},
+        {token::TokenType::Decrement, PrecedenceType::POSTFIX},
+        {token::TokenType::BitwiseAnd, PrecedenceType::COMPARISION},
+        {token::TokenType::BitwiseOr, PrecedenceType::COMPARISION},
+        {token::TokenType::BitwiseXor, PrecedenceType::COMPARISION},
+        {token::TokenType::BitwiseNot, PrecedenceType::PREFIX},
+        {token::TokenType::LeftShift, PrecedenceType::COMPARISION},
+        {token::TokenType::RightShift, PrecedenceType::COMPARISION},
+        {token::TokenType::Dot, PrecedenceType::MEMBER_ACCESS},
+        {token::TokenType::Ellipsis, PrecedenceType::LOWEST},
+        {token::TokenType::Plus, PrecedenceType::SUM},
+        {token::TokenType::Dash, PrecedenceType::SUM},
+        {token::TokenType::Asterisk, PrecedenceType::PRODUCT},
+        {token::TokenType::Percent, PrecedenceType::PRODUCT},
+        {token::TokenType::AsteriskAsterisk, PrecedenceType::Exponent},
+        {token::TokenType::ForwardSlash, PrecedenceType::PRODUCT},
+        {token::TokenType::BackwardSlash, PrecedenceType::PRODUCT},
+        {token::TokenType::EndOfFile, PrecedenceType::LOWEST},
     };
-    Parser(std::shared_ptr<Lexer> lexer);
-    std::shared_ptr<AST::program> parseProgram();
 
-  private:
-    void _nextToken();
-    bool _currentTokenIs(token::tokenType type);
-    bool _peekTokenIs(token::tokenType type);
-    bool _expectPeek(token::tokenType type);
-    void _peekError(token::tokenType type, token::tokenType expected_type,
-                    std::string suggestedFix = "");
-    void _noPrefixParseFnError(token::tokenType type);
-    PrecedenceType _currentPrecedence();
-    PrecedenceType _peekPrecedence();
-    std::shared_ptr<AST::statement> _parseStatement();
+    class Parser {
+      public:
+        std::shared_ptr<Lexer> lexer;
+        std::shared_ptr<token::Token> current_token;
+        std::shared_ptr<token::Token> peek_token;
+        std::vector<std::shared_ptr<errors::Error>> errors;
+        std::unordered_map<token::TokenType, std::function<std::shared_ptr<AST::Expression>()>> prefix_parse_fns = {
+            {token::TokenType::Integer, std::bind(&Parser::_parseIntegerLiteral, this)},
+            {token::TokenType::Float, std::bind(&Parser::_parseFloatLiteral, this)},
+            {token::TokenType::String, std::bind(&Parser::_parseStringLiteral, this)},
+            {token::TokenType::Identifier, std::bind(&Parser::_parseIdentifier, this)},
+            {token::TokenType::LeftParen, std::bind(&Parser::_parseGroupedExpression, this)},
+        };
+        std::unordered_map<token::TokenType, std::function<std::shared_ptr<AST::Expression>(std::shared_ptr<AST::Expression>)>> infix_parse_Fns = {
+            {token::TokenType::Plus, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+            {token::TokenType::Dash, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+            {token::TokenType::Asterisk, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+            {token::TokenType::ForwardSlash, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+            {token::TokenType::Percent, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+            {token::TokenType::AsteriskAsterisk, std::bind(&Parser::_parseInfixExpression, this, std::placeholders::_1)},
+        };
+        Parser(std::shared_ptr<Lexer> lexer);
+        std::shared_ptr<AST::Program> parseProgram();
 
-    std::shared_ptr<AST::expressionStatement> _parseExpressionStatement();
-    std::shared_ptr<AST::statement> _parseVariableDeclaration();
-    std::shared_ptr<AST::statement> _parseVariableAssignment();
-    std::shared_ptr<AST::returnStatement> _parseReturnStatement();
-    std::shared_ptr<AST::functionStatement> _parseFunctionStatement();
-    std::shared_ptr<AST::blockStatement> _parseBlockStatement();
+      private:
+        void _nextToken();
+        bool _currentTokenIs(token::TokenType type);
+        bool _peekTokenIs(token::TokenType type);
+        bool _expectPeek(token::TokenType type);
+        void _peekError(token::TokenType type, token::TokenType expected_type, std::string suggestedFix = "");
+        void _noPrefixParseFnError(token::TokenType type);
+        PrecedenceType _currentPrecedence();
+        PrecedenceType _peekPrecedence();
+        std::shared_ptr<AST::Statement> _parseStatement();
 
-    std::shared_ptr<AST::baseType> _parseType();
+        std::shared_ptr<AST::ExpressionStatement> _parseExpressionStatement();
+        std::shared_ptr<AST::Statement> _parseVariableDeclaration();
+        std::shared_ptr<AST::Statement> _parseVariableAssignment();
+        std::shared_ptr<AST::ReturnStatement> _parseReturnStatement();
+        std::shared_ptr<AST::FunctionStatement> _parseFunctionStatement();
+        std::shared_ptr<AST::BlockStatement> _parseBlockStatement();
 
-    std::shared_ptr<AST::expression>
-    _parseExpression(PrecedenceType precedence);
+        std::shared_ptr<AST::BaseType> _parseType();
 
-    std::shared_ptr<AST::expression> _parseIntegerLiteral();
-    std::shared_ptr<AST::expression> _parseFloatLiteral();
-    std::shared_ptr<AST::expression> _parseStringLiteral();
-    std::shared_ptr<AST::expression> _parseGroupedExpression();
-    std::shared_ptr<AST::expression> _parseIdentifier();
-    // std::shared_ptr<AST::expression> _parseIdentifier();
+        std::shared_ptr<AST::Expression> _parseExpression(PrecedenceType precedence);
 
-    std::shared_ptr<AST::expression>
-    _parseInfixExpression(std::shared_ptr<AST::expression> leftNode);
-}; // class Parser
+        std::shared_ptr<AST::Expression> _parseIntegerLiteral();
+        std::shared_ptr<AST::Expression> _parseFloatLiteral();
+        std::shared_ptr<AST::Expression> _parseStringLiteral();
+        std::shared_ptr<AST::Expression> _parseGroupedExpression();
+        std::shared_ptr<AST::Expression> _parseIdentifier();
+
+        std::shared_ptr<AST::Expression> _parseInfixExpression(std::shared_ptr<AST::Expression> leftNode);
+    }; // class Parser
 } // namespace parser
 #endif // PARSER_HPP

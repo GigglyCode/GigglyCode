@@ -2,9 +2,9 @@
 #include "lexer.hpp"
 
 std::shared_ptr<std::string> Lexer::_isString() {
-    if (this->currentChar == "\"") {
-        if (*this->_peekChar(1) == "\"") {
-            if (*this->_peekChar(2) == "\"") {
+    if(this->current_char == "\"") {
+        if(*this->_peekChar(1) == "\"") {
+            if(*this->_peekChar(2) == "\"") {
                 return std::make_shared<std::string>("\"\"\"");
             } else {
                 return std::make_shared<std::string>("\"");
@@ -12,9 +12,9 @@ std::shared_ptr<std::string> Lexer::_isString() {
         } else {
             return std::make_shared<std::string>("\"");
         }
-    } else if (this->currentChar == "'") {
-        if (*this->_peekChar(1) == "'") {
-            if (*this->_peekChar(2) == "'") {
+    } else if(this->current_char == "'") {
+        if(*this->_peekChar(1) == "'") {
+            if(*this->_peekChar(2) == "'") {
                 return std::make_shared<std::string>("'''");
             } else {
                 return std::make_shared<std::string>("'");
@@ -26,77 +26,66 @@ std::shared_ptr<std::string> Lexer::_isString() {
     return std::make_shared<std::string>("");
 }
 
-std::shared_ptr<std::string> Lexer::_readString(const std::string &quote) {
+std::shared_ptr<std::string> Lexer::_readString(const std::string& quote) {
     std::string str = "";
     std::string literal = quote;
-    int stColNo = this->colNo;
-    if (quote == "\"\"\"" || quote == "'''") {
+    int st_col_no = this->col_no;
+    if(quote == "\"\"\"" || quote == "'''") {
         this->_readChar();
         this->_readChar();
     }
-    while (true) {
+    while(true) {
         this->_readChar();
-        if (this->currentChar == "") {
-            errors::raiseSyntaxError(
-                this->source,
-                token::Token(token::tokenType::String, literal, this->lineNo,
-                             stColNo),
-                "Unterminated string literal",
-                "Add a closing " + quote + " to terminate the string literal");
-        } else if (this->currentChar == "\n" && quote != "\"\"\"" &&
-                   quote != "'''") {
-            errors::raiseSyntaxError(
-                this->source,
-                token::Token(token::tokenType::String, literal, this->lineNo,
-                             stColNo),
-                "Unterminated string literal",
-                "Add a closing " + quote + " to terminate the string literal");
-        } else if (this->currentChar == "\\") {
+        if(this->current_char == "") {
+            errors::raiseSyntaxError(this->source, token::Token(token::TokenType::String, literal, this->line_no, st_col_no),
+                                     "Unterminated string literal", "Add a closing " + quote + " to terminate the string literal");
+        } else if(this->current_char == "\n" && quote != "\"\"\"" && quote != "'''") {
+            errors::raiseSyntaxError(this->source, token::Token(token::TokenType::String, literal, this->line_no, st_col_no),
+                                     "Unterminated string literal", "Add a closing " + quote + " to terminate the string literal");
+        } else if(this->current_char == "\\") {
             this->_readChar();
-            if (this->currentChar == "\"") {
+            if(this->current_char == "\"") {
                 str += "\"";
                 literal += "\\\"";
-            } else if (this->currentChar == "'") {
+            } else if(this->current_char == "'") {
                 str += "'";
                 literal += "\\'";
-            } else if (this->currentChar == "n") {
+            } else if(this->current_char == "n") {
                 str += "\n";
                 literal += "\\n";
-            } else if (this->currentChar == "t") {
+            } else if(this->current_char == "t") {
                 str += "\t";
                 literal += "\\t";
-            } else if (this->currentChar == "r") {
+            } else if(this->current_char == "r") {
                 str += "\r";
                 literal += "\\r";
-            } else if (this->currentChar == "b") {
+            } else if(this->current_char == "b") {
                 str += "\b";
                 literal += "\\b";
-            } else if (this->currentChar == "f") {
+            } else if(this->current_char == "f") {
                 str += "\f";
                 literal += "\\f";
-            } else if (this->currentChar == "v") {
+            } else if(this->current_char == "v") {
                 str += "\v";
                 literal += "\\v";
-            } else if (this->currentChar == "\\") {
+            } else if(this->current_char == "\\") {
                 str += "\\";
                 literal += "\\\\";
             } else {
-                str += "\\" + this->currentChar;
-                literal += "\\" + this->currentChar;
+                str += "\\" + this->current_char;
+                literal += "\\" + this->current_char;
             }
-        } else if ((this->currentChar == quote)) {
+        } else if((this->current_char == quote)) {
             this->_readChar();
             break;
-        } else if (this->currentChar + *this->_peekChar() +
-                       *this->_peekChar(2) ==
-                   quote) {
+        } else if(this->current_char + *this->_peekChar() + *this->_peekChar(2) == quote) {
             this->_readChar();
             this->_readChar();
             this->_readChar();
             break;
         } else {
-            str += this->currentChar;
-            literal += this->currentChar;
+            str += this->current_char;
+            literal += this->current_char;
         }
     }
     return std::make_shared<std::string>(str);
