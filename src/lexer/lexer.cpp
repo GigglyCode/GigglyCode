@@ -3,7 +3,6 @@
 
 Lexer::Lexer(const std::string &source) {
     this->source = source;
-
     this->pos = -1;
     this->lineNo = 1;
     this->colNo = -1;
