@@ -1,55 +1,55 @@
 #include "lexer.hpp"
 #include "../errors/errors.hpp"
 
-Lexer::Lexer(const std::string &source) {
+Lexer::Lexer(const std::string& source) {
     this->source = source;
 
     this->pos = -1;
-    this->lineNo = 1;
-    this->colNo = -1;
-    this->currentChar = "";
+    this->line_no = 1;
+    this->col_no = -1;
+    this->current_char = "";
     this->_readChar();
 }
 
-token::tokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident) {
-    if (*ident == "and") {
-        return token::tokenType::And;
-    } else if (*ident == "or") {
-        return token::tokenType::Or;
-    } else if (*ident == "not") {
-        return token::tokenType::Not;
-    } else if (*ident == "def") {
-        return token::tokenType::Def;
-    } else if (*ident == "return") {
-        return token::tokenType::Return;
-    } else if (*ident == "if") {
-        return token::tokenType::If;
-    } else if (*ident == "else") {
-        return token::tokenType::Else;
-    } else if (*ident == "elif") {
-        return token::tokenType::ElIf;
-    } else if (*ident == "is") {
-        return token::tokenType::Is;
-    } else if (*ident == "while") {
-        return token::tokenType::While;
-    } else if (*ident == "for") {
-        return token::tokenType::For;
-    } else if (*ident == "in") {
-        return token::tokenType::In;
-    } else if (*ident == "break") {
-        return token::tokenType::Break;
-    } else if (*ident == "continue") {
-        return token::tokenType::Continue;
-    } else if (*ident == "True") {
-        return token::tokenType::True;
-    } else if (*ident == "False") {
-        return token::tokenType::False;
-    } else if (*ident == "MayBe") {
-        return token::tokenType::Maybe;
-    } else if (*ident == "None") {
-        return token::tokenType::None;
+token::TokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident) {
+    if(*ident == "and") {
+        return token::TokenType::And;
+    } else if(*ident == "or") {
+        return token::TokenType::Or;
+    } else if(*ident == "not") {
+        return token::TokenType::Not;
+    } else if(*ident == "def") {
+        return token::TokenType::Def;
+    } else if(*ident == "return") {
+        return token::TokenType::Return;
+    } else if(*ident == "if") {
+        return token::TokenType::If;
+    } else if(*ident == "else") {
+        return token::TokenType::Else;
+    } else if(*ident == "elif") {
+        return token::TokenType::ElIf;
+    } else if(*ident == "is") {
+        return token::TokenType::Is;
+    } else if(*ident == "while") {
+        return token::TokenType::While;
+    } else if(*ident == "for") {
+        return token::TokenType::For;
+    } else if(*ident == "in") {
+        return token::TokenType::In;
+    } else if(*ident == "break") {
+        return token::TokenType::Break;
+    } else if(*ident == "continue") {
+        return token::TokenType::Continue;
+    } else if(*ident == "True") {
+        return token::TokenType::True;
+    } else if(*ident == "False") {
+        return token::TokenType::False;
+    } else if(*ident == "MayBe") {
+        return token::TokenType::Maybe;
+    } else if(*ident == "None") {
+        return token::TokenType::None;
     }
-    return token::tokenType::Identifier;
+    return token::TokenType::Identifier;
 };
 
 std::shared_ptr<token::Token> Lexer::nextToken() {
@@ -57,192 +57,155 @@ std::shared_ptr<token::Token> Lexer::nextToken() {
 
     this->_skipWhitespace();
 
-    if (this->currentChar == "+") {
-        if (*this->_peekChar() == "+") {
-            token = this->_newToken(token::tokenType::Increment,
-                                    this->currentChar + *this->_peekChar());
+    if(this->current_char == "+") {
+        if(*this->_peekChar() == "+") {
+            token = this->_newToken(token::TokenType::Increment, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::PlusEqual,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::PlusEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token = this->_newToken(token::tokenType::Plus, this->currentChar);
+            token = this->_newToken(token::TokenType::Plus, this->current_char);
         }
-    } else if (this->currentChar == ".") {
-        if (*this->_peekChar() == "." && *this->_peekChar(2) == ".") {
-            token = this->_newToken(token::tokenType::Ellipsis,
-                                    this->currentChar + *this->_peekChar() +
-                                        *(this->_peekChar(2)));
+    } else if(this->current_char == ".") {
+        if(*this->_peekChar() == "." && *this->_peekChar(2) == ".") {
+            token = this->_newToken(token::TokenType::Ellipsis, this->current_char + *this->_peekChar() + *(this->_peekChar(2)));
             this->_readChar();
             this->_readChar();
         } else
-            token = this->_newToken(token::tokenType::Dot, this->currentChar);
-    } else if (this->currentChar == "-") {
-        if (*this->_peekChar() == ">") {
-            token = this->_newToken(token::tokenType::RightArrow,
-                                    this->currentChar + *this->_peekChar());
+            token = this->_newToken(token::TokenType::Dot, this->current_char);
+    } else if(this->current_char == "-") {
+        if(*this->_peekChar() == ">") {
+            token = this->_newToken(token::TokenType::RightArrow, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (*this->_peekChar() == "-") {
-            token = this->_newToken(token::tokenType::Decrement,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == "-") {
+            token = this->_newToken(token::TokenType::Decrement, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (this->_isDigit(*(this->_peekChar()))) {
+        } else if(this->_isDigit(*(this->_peekChar()))) {
             this->_readChar();
             token = this->_readNumber();
             token->literal = "-" + token->literal;
-        } else if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::DashEqual,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::DashEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token = this->_newToken(token::tokenType::Dash, this->currentChar);
+            token = this->_newToken(token::TokenType::Dash, this->current_char);
         }
-    } else if (this->currentChar == "*") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::AsteriskEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "*") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::AsteriskEqual, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (*this->_peekChar() == "*") {
-            token = this->_newToken(token::tokenType::AsteriskAsterisk,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == "*") {
+            token = this->_newToken(token::TokenType::AsteriskAsterisk, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Asterisk, this->currentChar);
+            token = this->_newToken(token::TokenType::Asterisk, this->current_char);
         }
-    } else if (this->currentChar == "/") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::ForwardSlashEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "/") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::ForwardSlashEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token = this->_newToken(token::tokenType::ForwardSlash,
-                                    this->currentChar);
+            token = this->_newToken(token::TokenType::ForwardSlash, this->current_char);
         }
-    } else if (this->currentChar == "%") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::PercentEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "%") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::PercentEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Percent, this->currentChar);
+            token = this->_newToken(token::TokenType::Percent, this->current_char);
         }
-    } else if (this->currentChar == "^") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::CaretEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "^") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::CaretEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token = this->_newToken(token::tokenType::BitwiseXor,
-                                    this->currentChar);
+            token = this->_newToken(token::TokenType::BitwiseXor, this->current_char);
         }
-    } else if (this->currentChar == "=") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::EqualEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "=") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::EqualEqual, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Equals, this->currentChar);
+            token = this->_newToken(token::TokenType::Equals, this->current_char);
         }
-    } else if (this->currentChar == ">") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::GreaterThanOrEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == ">") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::GreaterThanOrEqual, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (*this->_peekChar() == ">") {
-            token = this->_newToken(token::tokenType::RightShift,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == ">") {
+            token = this->_newToken(token::TokenType::RightShift, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token = this->_newToken(token::tokenType::GreaterThan,
-                                    this->currentChar);
+            token = this->_newToken(token::TokenType::GreaterThan, this->current_char);
         }
-    } else if (this->currentChar == "<") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::LessThanOrEqual,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "<") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::LessThanOrEqual, this->current_char + *this->_peekChar());
             this->_readChar();
-        } else if (*this->_peekChar() == "<") {
-            token = this->_newToken(token::tokenType::LeftShift,
-                                    this->currentChar + *this->_peekChar());
+        } else if(*this->_peekChar() == "<") {
+            token = this->_newToken(token::TokenType::LeftShift, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::LessThan, this->currentChar);
+            token = this->_newToken(token::TokenType::LessThan, this->current_char);
         }
-    } else if (this->currentChar == "!") {
-        if (*this->_peekChar() == "=") {
-            token = this->_newToken(token::tokenType::NotEquals,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "!") {
+        if(*this->_peekChar() == "=") {
+            token = this->_newToken(token::TokenType::NotEquals, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Illegal, this->currentChar);
+            token = this->_newToken(token::TokenType::Illegal, this->current_char);
         }
-    } else if (this->currentChar == "{") {
-        token = this->_newToken(token::tokenType::LeftBrace, this->currentChar);
-    } else if (this->currentChar == "}") {
-        token =
-            this->_newToken(token::tokenType::RightBrace, this->currentChar);
-    } else if (this->currentChar == "(") {
-        token = this->_newToken(token::tokenType::LeftParen, this->currentChar);
-    } else if (this->currentChar == ")") {
-        token =
-            this->_newToken(token::tokenType::RightParen, this->currentChar);
-    } else if (this->currentChar == "[") {
-        token =
-            this->_newToken(token::tokenType::LeftBracket, this->currentChar);
-    } else if (this->currentChar == "]") {
-        token =
-            this->_newToken(token::tokenType::RightBracket, this->currentChar);
-    } else if (this->currentChar == ":") {
-        token = this->_newToken(token::tokenType::Colon, this->currentChar);
-    } else if (this->currentChar == ";") {
-        token = this->_newToken(token::tokenType::Semicolon, this->currentChar);
-    } else if (this->currentChar == "&") {
-        if (*this->_peekChar() == "&") {
-            token = this->_newToken(token::tokenType::BitwiseAnd,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "{") {
+        token = this->_newToken(token::TokenType::LeftBrace, this->current_char);
+    } else if(this->current_char == "}") {
+        token = this->_newToken(token::TokenType::RightBrace, this->current_char);
+    } else if(this->current_char == "(") {
+        token = this->_newToken(token::TokenType::LeftParen, this->current_char);
+    } else if(this->current_char == ")") {
+        token = this->_newToken(token::TokenType::RightParen, this->current_char);
+    } else if(this->current_char == "[") {
+        token = this->_newToken(token::TokenType::LeftBracket, this->current_char);
+    } else if(this->current_char == "]") {
+        token = this->_newToken(token::TokenType::RightBracket, this->current_char);
+    } else if(this->current_char == ":") {
+        token = this->_newToken(token::TokenType::Colon, this->current_char);
+    } else if(this->current_char == ";") {
+        token = this->_newToken(token::TokenType::Semicolon, this->current_char);
+    } else if(this->current_char == "&") {
+        if(*this->_peekChar() == "&") {
+            token = this->_newToken(token::TokenType::BitwiseAnd, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Illegal, this->currentChar);
+            token = this->_newToken(token::TokenType::Illegal, this->current_char);
         }
-    } else if (this->currentChar == "|") {
-        if (*this->_peekChar() == "|") {
-            token = this->_newToken(token::tokenType::BitwiseOr,
-                                    this->currentChar + *this->_peekChar());
+    } else if(this->current_char == "|") {
+        if(*this->_peekChar() == "|") {
+            token = this->_newToken(token::TokenType::BitwiseOr, this->current_char + *this->_peekChar());
             this->_readChar();
         } else {
-            token =
-                this->_newToken(token::tokenType::Illegal, this->currentChar);
+            token = this->_newToken(token::TokenType::Illegal, this->current_char);
         }
-    } else if (this->currentChar == "~") {
-        token =
-            this->_newToken(token::tokenType::BitwiseNot, this->currentChar);
-    } else if (this->currentChar == ",") {
-        token = this->_newToken(token::tokenType::Comma, this->currentChar);
-    } else if (this->currentChar == "") {
-        token = this->_newToken(token::tokenType::EndOfFile, "");
+    } else if(this->current_char == "~") {
+        token = this->_newToken(token::TokenType::BitwiseNot, this->current_char);
+    } else if(this->current_char == ",") {
+        token = this->_newToken(token::TokenType::Comma, this->current_char);
+    } else if(this->current_char == "") {
+        token = this->_newToken(token::TokenType::EndOfFile, "");
     } else {
-        if (*this->_isString() != "") {
-            std::shared_ptr<std::string> str =
-                this->_readString(*this->_isString());
-            token = this->_newToken(token::tokenType::String, *str);
+        if(*this->_isString() != "") {
+            std::shared_ptr<std::string> str = this->_readString(*this->_isString());
+            token = this->_newToken(token::TokenType::String, *str);
             return token;
-        } else if (this->_isLetter(this->currentChar)) {
+        } else if(this->_isLetter(this->current_char)) {
             std::shared_ptr<std::string> ident = this->_readIdentifier();
             token = this->_newToken(this->_lookupIdent(ident), *ident);
             return token;
-        } else if (this->_isDigit(this->currentChar)) {
+        } else if(this->_isDigit(this->current_char)) {
             token = this->_readNumber();
             return token;
         } else {
-            token =
-                this->_newToken(token::tokenType::Illegal, this->currentChar);
+            token = this->_newToken(token::TokenType::Illegal, this->current_char);
         }
     }
     this->_readChar();
