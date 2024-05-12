@@ -3,7 +3,7 @@ add_subdirectory(
     "${PROJECT_BINARY_DIR}/errors"
 )
 
-add_library(lexer lexer.cpp string.cpp helper.cpp tokens.cpp)
+add_library(lexer lexer.cpp tokens.cpp)
 
 target_link_libraries(lexer errors)
 
