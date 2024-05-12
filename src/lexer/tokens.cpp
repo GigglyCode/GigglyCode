@@ -1,9 +1,8 @@
+#include "./tokens.hpp"
 #include <string>
 #include <unordered_map>
-#include "./tokens.hpp"
 
-std::string token::Token::toString(bool color)
-{
+std::string token::Token::toString(bool color) {
     // Define ANSI escape codes for colors
     const std::string colorReset = "\x1b[0m";
     const std::string colorRed = "\x1b[91m";
@@ -15,16 +14,16 @@ std::string token::Token::toString(bool color)
     // Convert variables to strings
     std::string typeString = *tokenTypeString(type);
     std::string literalString = literal;
-    std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
+    std::unordered_map<std::string, std::string> replacements = {
+        {"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
 
     // Replace special characters in literalString
-    for (auto &replacement : replacements)
-    {
+    for (auto &replacement : replacements) {
         size_t pos = literalString.find(replacement.first);
-        while (pos != std::string::npos)
-        {
+        while (pos != std::string::npos) {
             literalString.replace(pos, 1, replacement.second);
-            pos = literalString.find(replacement.first, pos + replacement.second.size());
+            pos = literalString.find(replacement.first,
+                                     pos + replacement.second.size());
         }
     }
 
@@ -33,7 +32,10 @@ std::string token::Token::toString(bool color)
     std::string endColNoString = std::to_string(end_col_no);
 
     // Calculate padding for literals
-    size_t literalPadding = literalString.length() >= 10 ? 0 : (10 - literalString.length()) / 2 + (literalString.length() % 2);
+    size_t literalPadding =
+        literalString.length() >= 10
+            ? 0
+            : (10 - literalString.length()) / 2 + (literalString.length() % 2);
     std::string literalPaddingStr(literalPadding, ' ');
 
     // Apply padding to each field for alignment
@@ -47,18 +49,23 @@ std::string token::Token::toString(bool color)
         endColNoString += std::string(2 - endColNoString.length(), ' ');
 
     // Construct the formatted string with colors
-    return (color ? colorRed : "") + "Token{type: " + (color ? colorReset + colorBlue : "") + typeString + (color ? colorRed : "") +
-           ", literal: " + (color ? colorGreen + "\"" + colorYellow : "") + literalPaddingStr + literalString + literalPaddingStr + (color ? colorGreen + "\"" : "") +
-           ", line_no: " + (color ? colorReset + colorGreen : "") + lineNoString + (color ? colorReset : "") +
-           ", col_no: " + (color ? colorReset + colorMagenta : "") + colNoString + (color ? colorReset : "") +
-           ", end_col_no: " + (color ? colorReset + colorMagenta : "") + endColNoString + (color ? colorReset : "") +
+    return (color ? colorRed : "") +
+           "Token{type: " + (color ? colorReset + colorBlue : "") + typeString +
+           (color ? colorRed : "") +
+           ", literal: " + (color ? colorGreen + "\"" + colorYellow : "") +
+           literalPaddingStr + literalString + literalPaddingStr +
+           (color ? colorGreen + "\"" : "") +
+           ", line_no: " + (color ? colorReset + colorGreen : "") +
+           lineNoString + (color ? colorReset : "") +
+           ", col_no: " + (color ? colorReset + colorMagenta : "") +
+           colNoString + (color ? colorReset : "") +
+           ", end_col_no: " + (color ? colorReset + colorMagenta : "") +
+           endColNoString + (color ? colorReset : "") +
            (color ? colorRed : "") + "};" + (color ? colorReset : "");
 }
 
-std::shared_ptr<std::string> token::tokenTypeString(tokenType type)
-{
-    switch (type)
-    {
+std::shared_ptr<std::string> token::tokenTypeString(tokenType type) {
+    switch (type) {
     case tokenType::Identifier:
         return std::make_shared<std::string>("Identifier");
     case tokenType::Integer:
@@ -190,11 +197,10 @@ std::shared_ptr<std::string> token::tokenTypeString(tokenType type)
     case tokenType::String:
         return std::make_shared<std::string>("String");
     default:
-        return std::make_shared<std::string>("unknown token type(" + std::to_string(static_cast<int>(type)) + ")");
+        return std::make_shared<std::string>(
+            "unknown token type(" + std::to_string(static_cast<int>(type)) +
+            ")");
     }
 }
 
-void token::Token::print()
-{
-    std::cout << toString() << std::endl;
-}
+void token::Token::print() { std::cout << toString() << std::endl; }

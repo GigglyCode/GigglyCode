@@ -1,9 +1,7 @@
 #include "./ast.hpp"
 
-std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
-{
-    switch (type)
-    {
+std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type) {
+    switch (type) {
     case nodeType::Program:
         return std::make_shared<std::string>("Program");
     case nodeType::ExpressionStatement:
@@ -37,67 +35,58 @@ std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
     }
 };
 
-std::shared_ptr<nlohmann::json> AST::genericType::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::genericType::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["name"] = *this->name->toJSON();
     jsonAst["generics"] = nlohmann::json::array();
-    for (auto &gen : this->generics)
-    {
+    for (auto &gen : this->generics) {
         jsonAst["generics"].push_back(*gen->toJSON());
     }
     return std::make_shared<nlohmann::json>(jsonAst);
 };
 
-std::shared_ptr<nlohmann::json> AST::program::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::program::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["statements"] = nlohmann::json::array();
-    for (auto &stmt : this->statements)
-    {
+    for (auto &stmt : this->statements) {
         jsonAst["statements"].push_back(*stmt->toJSON());
     }
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::expressionStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::expressionStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["expression"] = this->expr == nullptr ? nullptr : *expr->toJSON();
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::blockStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::blockStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["statements"] = nlohmann::json::array();
-    for (auto &stmt : this->statements)
-    {
+    for (auto &stmt : this->statements) {
         jsonAst["statements"].push_back(*stmt->toJSON());
     }
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::returnStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::returnStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
-    jsonAst["value"] = this->value == nullptr ? nullptr : *(this->value->toJSON());
+    jsonAst["value"] =
+        this->value == nullptr ? nullptr : *(this->value->toJSON());
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::functionStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::functionStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["name"] = *this->name->toJSON();
     jsonAst["parameters"] = nlohmann::json::array();
-    for (auto &param : this->parameters)
-    {
+    for (auto &param : this->parameters) {
         jsonAst["parameters"].push_back(*param->toJSON());
     }
     jsonAst["return_type"] = *this->returnType->toJSON();
@@ -105,8 +94,7 @@ std::shared_ptr<nlohmann::json> AST::functionStatement::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::functionStatement::parameter::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::functionStatement::parameter::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["name"] = *this->name->toJSON();
@@ -114,8 +102,7 @@ std::shared_ptr<nlohmann::json> AST::functionStatement::parameter::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::variableDeclarationStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::variableDeclarationStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["identifier"] = *this->name->toJSON();
@@ -124,8 +111,7 @@ std::shared_ptr<nlohmann::json> AST::variableDeclarationStatement::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::variableAssignmentStatement::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::variableAssignmentStatement::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["identifier"] = *this->name->toJSON();
@@ -133,8 +119,7 @@ std::shared_ptr<nlohmann::json> AST::variableAssignmentStatement::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::infixExpression::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::infixExpression::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["operator"] = *token::tokenTypeString(this->op);
@@ -143,32 +128,28 @@ std::shared_ptr<nlohmann::json> AST::infixExpression::toJSON()
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::integerLiteral::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::integerLiteral::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["value"] = this->value;
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::floatLiteral::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::floatLiteral::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["value"] = this->value;
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::stringLiteral::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::stringLiteral::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["value"] = this->value;
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
-std::shared_ptr<nlohmann::json> AST::identifierLiteral::toJSON()
-{
+std::shared_ptr<nlohmann::json> AST::identifierLiteral::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["value"] = this->value;
