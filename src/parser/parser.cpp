@@ -12,10 +12,13 @@ parser::Parser::Parser(std::shared_ptr<Lexer> lexer)
 std::shared_ptr<AST::program> parser::Parser::parseProgram()
 {
     std::shared_ptr<AST::program> program = std::make_shared<AST::program>();
-    while (current_token->type != token::tokenType::EndOfFile) {
+    while (current_token->type != token::tokenType::EndOfFile)
+    {
         auto statement = this->_parseStatement();
         if (statement != nullptr)
+        {
             program->statements.push_back(statement);
+        }
         this->_nextToken();
     }
     return program;
@@ -143,7 +146,9 @@ std::shared_ptr<AST::expressionStatement> parser::Parser::_parseExpressionStatem
 {
     auto expr = this->_parseExpression(PrecedenceType::LOWEST);
     if (this->_peekTokenIs(token::tokenType::Semicolon))
+    {
         this->_nextToken();
+    }
     auto stmt = std::make_shared<AST::expressionStatement>(expr);
     return stmt;
 }
@@ -218,15 +223,18 @@ std::shared_ptr<AST::statement> parser::Parser::_parseVariableAssignment()
 std::shared_ptr<AST::expression> parser::Parser::_parseExpression(PrecedenceType precedence)
 {
     auto iter = prefixParseFns.find(current_token->type);
-    if (iter == prefixParseFns.end()) {
+    if (iter == prefixParseFns.end())
+    {
         this->_noPrefixParseFnError(current_token->type);
         return nullptr;
     }
     auto prefix_fn = iter->second;
     auto leftExpr = prefix_fn();
-    while (!_peekTokenIs(token::tokenType::Semicolon) && precedence < _peekPrecedence()) {
+    while (!_peekTokenIs(token::tokenType::Semicolon) && precedence < _peekPrecedence())
+    {
         auto iter = infixParseFns.find(peek_token->type);
-        if (iter == infixParseFns.end()) {
+        if (iter == infixParseFns.end())
+        {
             return leftExpr;
         }
         this->_nextToken();
@@ -249,7 +257,8 @@ std::shared_ptr<AST::expression> parser::Parser::_parseGroupedExpression()
 {
     this->_nextToken();
     auto expr = this->_parseExpression(PrecedenceType::LOWEST);
-    if (!this->_expectPeek(token::tokenType::RightParen)) {
+    if (!this->_expectPeek(token::tokenType::RightParen))
+    {
         return nullptr;
     }
     return expr;
@@ -297,10 +306,13 @@ bool parser::Parser::_peekTokenIs(token::tokenType type)
 
 bool parser::Parser::_expectPeek(token::tokenType type)
 {
-    if (_peekTokenIs(type)) {
+    if (_peekTokenIs(type))
+    {
         _nextToken();
         return true;
-    } else {
+    }
+    else
+    {
         _peekError(peek_token->type, type);
         return false;
     }
@@ -310,18 +322,26 @@ parser::PrecedenceType parser::Parser::_currentPrecedence()
 {
     auto it = token_precedence.find(current_token->type);
     if (it != token_precedence.end())
+    {
         return it->second;
+    }
     else
+    {
         return PrecedenceType::LOWEST;
+    }
 }
 
 parser::PrecedenceType parser::Parser::_peekPrecedence()
 {
     auto it = token_precedence.find(peek_token->type);
     if (it != token_precedence.end())
+    {
         return it->second;
+    }
     else
+    {
         return PrecedenceType::LOWEST;
+    }
 }
 
 void parser::Parser::_peekError(token::tokenType type, token::tokenType expected_type, std::string suggestedFix)

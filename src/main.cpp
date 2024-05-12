@@ -21,15 +21,20 @@ int main(int argc, char *argv[])
 
     std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     // Lexer
-    if (DEBUG_LEXER) {
+    if (DEBUG_LEXER)
+    {
         std::cout << "=========== Lexer Debug ===========" << std::endl;
         Lexer debugLexer(fileContent);
-        if (!std::string(DEBUG_LEXER_OUTPUT_PATH).empty()) {
+        if (!std::string(DEBUG_LEXER_OUTPUT_PATH).empty())
+        {
             std::ofstream file_C(DEBUG_LEXER_OUTPUT_PATH, std::ios::trunc); // Open file_C in truncate mode
-            if (file_C.is_open()) {
+            if (file_C.is_open())
+            {
                 file_C << ""; // Clear file_C
                 file_C.close();
-            } else {
+            }
+            else
+            {
                 std::cout << "Unable to open file_C";
             }
         }

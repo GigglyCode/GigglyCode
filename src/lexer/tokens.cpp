@@ -18,9 +18,11 @@ std::string token::Token::toString(bool color)
     std::unordered_map<std::string, std::string> replacements = {{"\n", "\\$(n)"}, {"\t", "\\$(t)"}};
 
     // Replace special characters in literalString
-    for (auto &replacement : replacements) {
+    for (auto &replacement : replacements)
+    {
         size_t pos = literalString.find(replacement.first);
-        while (pos != std::string::npos) {
+        while (pos != std::string::npos)
+        {
             literalString.replace(pos, 1, replacement.second);
             pos = literalString.find(replacement.first, pos + replacement.second.size());
         }
@@ -55,7 +57,8 @@ std::string token::Token::toString(bool color)
 
 std::shared_ptr<std::string> token::tokenTypeString(tokenType type)
 {
-    switch (type) {
+    switch (type)
+    {
     case tokenType::Identifier:
         return std::make_shared<std::string>("Identifier");
     case tokenType::Integer:

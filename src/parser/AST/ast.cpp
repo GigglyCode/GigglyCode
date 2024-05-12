@@ -2,7 +2,8 @@
 
 std::shared_ptr<std::string> AST::nodeTypeToString(nodeType type)
 {
-    switch (type) {
+    switch (type)
+    {
     case nodeType::Program:
         return std::make_shared<std::string>("Program");
     case nodeType::ExpressionStatement:
@@ -54,7 +55,8 @@ std::shared_ptr<nlohmann::json> AST::program::toJSON()
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["statements"] = nlohmann::json::array();
-    for (auto &stmt : this->statements) {
+    for (auto &stmt : this->statements)
+    {
         jsonAst["statements"].push_back(*stmt->toJSON());
     }
     return std::make_shared<nlohmann::json>(jsonAst);
