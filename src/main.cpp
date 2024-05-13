@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 
-#define DEBUG_LEXER true
-#define DEBUG_PARSER true
-#define DEBUG_LEXER_OUTPUT_PATH "lexer_output.txt"
-#define DEBUG_PARSER_OUTPUT_PATH "parser_output.json"
+#define DEBUG_LEXER false
+#define DEBUG_PARSER false
+#define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output.json"
+#define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
 
 int main(int argc, char* argv[]) {
     // Reading code
