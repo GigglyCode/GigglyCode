@@ -43,8 +43,8 @@ token::TokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident) {
         return token::TokenType::True;
     } else if(*ident == "False") {
         return token::TokenType::False;
-    } else if(*ident == "MayBe") {
-        return token::TokenType::Maybe;
+        // } else if(*ident == "MayBe") {
+        //     return token::TokenType::Maybe;
     } else if(*ident == "None") {
         return token::TokenType::None;
     }

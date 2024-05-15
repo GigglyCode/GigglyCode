@@ -26,6 +26,7 @@ namespace AST {
         // Literals
         IntegerLiteral,
         FloatLiteral,
+        BooleanLiteral,
         StringLiteral,
         IdentifierLiteral,
     };
@@ -170,6 +171,14 @@ namespace AST {
         std::string value;
         inline IdentifierLiteral(std::string value) : value(value) {}
         inline NodeType type() override { return NodeType::IdentifierLiteral; };
+        std::shared_ptr<nlohmann::json> toJSON() override;
+    };
+
+    class BooleanLiteral : public Expression {
+      public:
+        bool value;
+        inline BooleanLiteral(bool value) : value(value) {}
+        inline NodeType type() override { return NodeType::BooleanLiteral; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };
 } // namespace AST

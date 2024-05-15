@@ -71,6 +71,8 @@ namespace parser {
             {token::TokenType::Integer, std::bind(&Parser::_parseIntegerLiteral, this)},
             {token::TokenType::Float, std::bind(&Parser::_parseFloatLiteral, this)},
             {token::TokenType::String, std::bind(&Parser::_parseStringLiteral, this)},
+            {token::TokenType::True, std::bind(&Parser::_parseBooleanLiteral, this)},
+            {token::TokenType::False, std::bind(&Parser::_parseBooleanLiteral, this)},
             {token::TokenType::Identifier, std::bind(&Parser::_parseIdentifier, this)},
             {token::TokenType::LeftParen, std::bind(&Parser::_parseGroupedExpression, this)},
         };
@@ -109,6 +111,7 @@ namespace parser {
 
         std::shared_ptr<AST::Expression> _parseIntegerLiteral();
         std::shared_ptr<AST::Expression> _parseFloatLiteral();
+        std::shared_ptr<AST::Expression> _parseBooleanLiteral();
         std::shared_ptr<AST::Expression> _parseStringLiteral();
         std::shared_ptr<AST::Expression> _parseGroupedExpression();
         std::shared_ptr<AST::Expression> _parseIdentifier();

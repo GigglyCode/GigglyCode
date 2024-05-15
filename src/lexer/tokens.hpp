@@ -90,8 +90,8 @@ namespace token {
         Continue, // Continue Statement continue
         True,     // Boolean true true
         False,    // Boolean false false
-        Maybe,    // Maybe type maybe
-        None,     // None type none
+        // Maybe,    // Maybe type maybe
+        None, // None type none
     };
 
     std::shared_ptr<std::string> tokenTypeString(TokenType type);

@@ -178,8 +178,8 @@ std::shared_ptr<std::string> token::tokenTypeString(TokenType type) {
         return std::make_shared<std::string>("True");
     case TokenType::False:
         return std::make_shared<std::string>("False");
-    case TokenType::Maybe:
-        return std::make_shared<std::string>("Maybe");
+    // case TokenType::Maybe:
+    //     return std::make_shared<std::string>("Maybe");
     case TokenType::None:
         return std::make_shared<std::string>("None");
     case TokenType::String:

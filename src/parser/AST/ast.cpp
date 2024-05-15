@@ -30,6 +30,8 @@ std::shared_ptr<std::string> AST::nodeTypeToString(NodeType type) {
         return std::make_shared<std::string>("StringLiteral");
     case NodeType::IdentifierLiteral:
         return std::make_shared<std::string>("IdentifierLiteral");
+    case NodeType::BooleanLiteral:
+        return std::make_shared<std::string>("BooleanLiteral");
     default:
         return std::make_shared<std::string>("UNKNOWN");
     }
@@ -149,6 +151,13 @@ std::shared_ptr<nlohmann::json> AST::StringLiteral::toJSON() {
 }
 
 std::shared_ptr<nlohmann::json> AST::IdentifierLiteral::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["value"] = this->value;
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::BooleanLiteral::toJSON() {
     auto jsonAst = nlohmann::json();
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["value"] = this->value;

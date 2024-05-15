@@ -218,6 +218,11 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseFloatLiteral() {
     return expr;
 }
 
+std::shared_ptr<AST::Expression> parser::Parser::_parseBooleanLiteral() {
+    auto expr = std::make_shared<AST::BooleanLiteral>(current_token->type == token::TokenType::True);
+    return expr;
+}
+
 std::shared_ptr<AST::Expression> parser::Parser::_parseStringLiteral() {
     auto expr = std::make_shared<AST::StringLiteral>(current_token->literal);
     return expr;
