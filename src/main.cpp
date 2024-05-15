@@ -1,13 +1,19 @@
+#include "compiler/compiler.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include <fstream>
 #include <iostream>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/raw_ostream.h>
 #include <string>
+
 
 #define DEBUG_LEXER false
 #define DEBUG_PARSER false
-#define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output.json"
+#define DEBUG_COMPILER true
+#define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output"
 #define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
+#define DEBUG_COMPILER_OUTPUT_PATH "./dump/compiler_output.ll"
 
 int main(int argc, char* argv[]) {
     // Reading code
@@ -48,12 +54,15 @@ int main(int argc, char* argv[]) {
                 std::cout << token->toString() << std::endl;
             }
         }
+        if(!std::string(DEBUG_LEXER_OUTPUT_PATH).empty()) {
+            std::cout << "Lexer output dumped to " << DEBUG_LEXER_OUTPUT_PATH << std::endl;
+        }
     }
     Lexer l(file_content);
     parser::Parser p(std::make_shared<Lexer>(l));
+    auto program = p.parseProgram();
     if(DEBUG_PARSER) {
         std::cout << "=========== Parser Debug ===========" << std::endl;
-        auto program = p.parseProgram();
         if(!std::string(DEBUG_PARSER_OUTPUT_PATH).empty()) {
             std::ofstream file(DEBUG_PARSER_OUTPUT_PATH,
                                std::ios::trunc); // Open file in append mode
@@ -72,6 +81,30 @@ int main(int argc, char* argv[]) {
         if(p.errors.size() > 0) {
             return 1;
         }
+        if(!std::string(DEBUG_PARSER_OUTPUT_PATH).empty()) {
+            std::cout << "Parser output dumped to " << DEBUG_PARSER_OUTPUT_PATH << std::endl;
+        }
+    } else {
+        for(auto& err : p.errors) {
+            err->raise(false);
+        }
+        if(p.errors.size() > 0) {
+            return 1;
+        }
+    }
+    compiler::Compiler c;
+    if(DEBUG_COMPILER) {
+        std::cout << "=========== Compiler Debug ===========" << std::endl;
+        c.compile(program);
+        std::error_code EC;
+        llvm::raw_fd_ostream file(DEBUG_COMPILER_OUTPUT_PATH, EC, llvm::sys::fs::OF_None);
+        if(EC) {
+            std::cerr << "Could not open file: " << EC.message() << std::endl;
+            return 1;
+        }
+        c.llvm_module->print(file, nullptr);
+        file.close();
+        std::cout << "Compiler output dumped to " << DEBUG_COMPILER_OUTPUT_PATH << std::endl;
     }
     return 0;
 }

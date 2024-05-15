@@ -93,8 +93,8 @@ namespace AST {
         class parameter : public Node {
           public:
             std::shared_ptr<Expression> name;
-            std::shared_ptr<BaseType> valueType;
-            inline parameter(std::shared_ptr<Expression> name, std::shared_ptr<BaseType> type) : name(name), valueType(type) {}
+            std::shared_ptr<BaseType> value_type;
+            inline parameter(std::shared_ptr<Expression> name, std::shared_ptr<BaseType> type) : name(name), value_type(type) {}
             inline NodeType type() override { return NodeType::Type; };
             std::shared_ptr<nlohmann::json> toJSON() override;
         };
@@ -112,11 +112,11 @@ namespace AST {
     class VariableDeclarationStatement : public Statement {
       public:
         std::shared_ptr<Expression> name;
-        std::shared_ptr<BaseType> valueType;
+        std::shared_ptr<BaseType> value_type;
         std::shared_ptr<Expression> value;
         inline VariableDeclarationStatement(std::shared_ptr<Expression> name, std::shared_ptr<BaseType> type,
                                             std::shared_ptr<Expression> value = nullptr)
-            : name(name), valueType(type), value(value) {}
+            : name(name), value_type(type), value(value) {}
         inline NodeType type() override { return NodeType::VariableDeclarationStatement; };
         std::shared_ptr<nlohmann::json> toJSON() override;
     };

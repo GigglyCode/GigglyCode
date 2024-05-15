@@ -1,6 +1,10 @@
 
 run:
 	@echo ---------------------------------------------------------
+	./build/gigly.exe ./test/testscipt.gc
+
+rund:
+	@echo ---------------------------------------------------------
 	./build/Debug/gigly.exe ./test/testscipt.gc
 
 # compiler = cl

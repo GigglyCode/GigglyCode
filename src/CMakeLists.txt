@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 
+
 project(GigglyCode LANGUAGES CXX)
 
 set(BUILD_ARCH "-m64")
 set(TARGET_64 ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(LLVM REQUIRED CONFIG)
 include_directories(${LLVM_INCLUDE_DIRS})

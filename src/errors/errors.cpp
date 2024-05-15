@@ -3,22 +3,21 @@
 #include <vector>
 
 void errors::Error::raise(bool terminate) {
-    std::cerr << "\n\n\033[1;35m" << std::string(60, '=') << "\033[0m\n\n";
+    std::cerr << "\n\n\033[1;35m" << std::string(30, '=') << " Syntax Error " << std::string(30, '=') << "\033[0m\n\n";
 
     // Print error message in red color
     std::cerr << "\033[1;31m"
               << "Error: \033[0m"
               << "\033[1;97m" << message << "\033[0m\n";
 
-    if(st_line != -1 && end_line != -1) {
+    if(st_line != -1 && end_line != -1 && st_line <= end_line) {
         std::cerr << "\033[1;36mSource Context:\033[0m\n";
 
         if(st_line - 1 > 0) {
             std::cerr << "\033[0;32m" << st_line - 1 << " | \033[0m" << getStringOnLineNumber(source, st_line - 1) << "\n";
         }
-        for(int i = st_line; i <= end_line; i++) {
-            std::cerr << "\033[0;32m" << i << " | \033[0m" << getStringOnLineNumber(source, i) << "\n";
-        }
+        std::cerr << "source: " << source << "\n";
+        std::cerr << "\033[0;32m" << st_line << " | \033[0m" << getStringOnLineNumber(source, st_line) << "\n";
         if(end_line + 1 <= getNumberOfLines(source)) {
             std::cerr << "\033[0;32m" << end_line + 1 << " | \033[0m" << getStringOnLineNumber(source, end_line + 1) << "\n";
         }
@@ -32,6 +31,7 @@ void errors::Error::raise(bool terminate) {
     if(terminate)
         exit(EXIT_FAILURE);
 }
+
 void errors::NoPrefixParseFnError::raise(bool terminate) {
     std::cerr << "\n\n\033[1;35m" << std::string(60, '=') << "\033[0m\n\n";
 

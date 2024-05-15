@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-std::string getStringOnLineNumber(const std::string& str, int line_number);
+std::string getStringOnLineNumber(const std::string& input_string, int line_number);
 int getNumberOfLines(const std::string& str);
 
 class Lexer {

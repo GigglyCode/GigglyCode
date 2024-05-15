@@ -1,5 +1,6 @@
 #include "lexer.hpp"
 #include <algorithm>
+#include <sstream>
 
 void Lexer::_readChar() {
     this->pos++;
@@ -75,20 +76,22 @@ void Lexer::_skipWhitespace() {
 
 bool Lexer::_isDigit(const std::string& character) { return character >= "0" && character <= "9"; };
 
+
 bool Lexer::_isLetter(const std::string& character) {
     return (character >= "a" && character <= "z") || (character >= "A" && character <= "Z") || character == "_";
 };
 
-std::string getStringOnLineNumber(const std::string& str, int line_number) {
-    size_t start_pos = 0;
-    for(int i = 1; i < line_number; ++i) {
-        if((start_pos = str.find('\n', start_pos)) == std::string::npos) {
-            return "";
+std::string getStringOnLineNumber(const std::string& input_string, int line_number) {
+    std::istringstream input(input_string);
+    std::string line;
+    for(int i = 0; std::getline(input, line); ++i) {
+        if(i == line_number - 1) {
+            return line; // Found the line
+        } else if(i > line_number - 1) {
+            break; // Line number not found
         }
-        start_pos++;
     }
-    size_t endPos = str.find('\n', start_pos);
-    return str.substr(start_pos, (endPos != std::string::npos) ? endPos - start_pos : std::string::npos);
+    return ""; // Line number not found
 }
 
 int getNumberOfLines(const std::string& str) { return std::count(str.begin(), str.end(), '\n') + 1; }
