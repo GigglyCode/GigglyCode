@@ -88,15 +88,20 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
 };
 
 void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST::VariableDeclarationStatement> variable_declaration_statement) {
-    auto var_name = variable_declaration_statement->name;
+    auto var_name = std::static_pointer_cast<AST::IdentifierLiteral>(variable_declaration_statement->name);
     auto var_value = variable_declaration_statement->value;
     auto var_type = this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(
                                        std::dynamic_pointer_cast<AST::GenericType>(variable_declaration_statement->value_type)->name)
                                        ->value];
     auto [value, type] = this->_resolveValue(var_value);
-    llvm::AllocaInst* alloca =
-        this->llvm_ir_builder.CreateAlloca(var_type, nullptr, std::dynamic_pointer_cast<AST::IdentifierLiteral>(var_name)->value);
-    this->llvm_ir_builder.CreateStore(value, alloca);
+    if(this->enviornment.get(var_name->value) == std::make_tuple(nullptr, nullptr, nullptr)) {
+        llvm::AllocaInst* alloca =
+            this->llvm_ir_builder.CreateAlloca(var_type, nullptr, std::dynamic_pointer_cast<AST::IdentifierLiteral>(var_name)->value);
+        this->llvm_ir_builder.CreateStore(value, alloca);
+        this->enviornment.add(var_name->value, var_type, value, alloca);
+    } else {
+        std::cout << "Variable already declared" << std::endl;
+    }
 };
 
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::shared_ptr<AST::Node> node) {
@@ -115,6 +120,14 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         auto boolean_literal = std::static_pointer_cast<AST::BooleanLiteral>(node);
         auto value = llvm::ConstantInt::get(llvm_context, llvm::APInt(1, boolean_literal->value, true));
         return {value, this->type_map["bool"]};
+    }
+    case AST::NodeType::IdentifierLiteral: {
+        auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);
+        auto [value, type, alloca] = this->enviornment.get(identifier_literal->value);
+        std::cout << "some thing is going to fuck\n";
+        auto x = std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(type, alloca, identifier_literal->value), type};
+        std::cout << "it is not fucked";
+        return x;
     }
     case AST::NodeType::ExpressionStatement: {
         auto expression_statement = std::static_pointer_cast<AST::ExpressionStatement>(node);
