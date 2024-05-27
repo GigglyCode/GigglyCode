@@ -1,5 +1,4 @@
-add_subdirectory(
-    "${PROJECT_SOURCE_DIR}/parser/AST"
-    "${PROJECT_BINARY_DIR}/lexer"
-)
+add_subdirectory(enviornment)
+
 add_library(compiler compiler.cpp)
+target_link_libraries(compiler enviornment)

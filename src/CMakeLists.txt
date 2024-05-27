@@ -14,6 +14,7 @@ add_definitions(${LLVM_DEFINITIONS})
 
 add_subdirectory(lexer)
 add_subdirectory(parser)
+add_subdirectory(compiler)
 
 add_executable(gigly main.cpp)
 
@@ -34,6 +35,7 @@ target_link_libraries(gigly ${llvm_libs})
 
 target_link_libraries(gigly lexer)
 target_link_libraries(gigly parser)
+target_link_libraries(gigly compiler)
 
 target_include_directories(gigly PUBLIC
     "${PROJECT_SOURCE_DIR}/src/lexer"

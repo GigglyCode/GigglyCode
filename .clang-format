@@ -2,7 +2,6 @@ Language: Cpp
 BasedOnStyle: LLVM
 IndentWidth: 4
 MaxEmptyLinesToKeep: 2
-NamespaceIndentation: All
 ColumnLimit: 150
 PenaltyBreakAssignment: 2
 PenaltyReturnTypeOnItsOwnLine: 200
