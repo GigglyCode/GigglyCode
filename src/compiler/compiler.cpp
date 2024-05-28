@@ -28,6 +28,10 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         this->_visitVariableAssignmentStatement(std::static_pointer_cast<AST::VariableAssignmentStatement>(node));
         break;
     }
+    case AST::NodeType::IfElseStatement: {
+        this->_visitIfElseStatement(std::static_pointer_cast<AST::IfElseStatement>(node));
+        break;
+    }
     case AST::NodeType::BlockStatement: {
         this->_visitBlockStatement(std::static_pointer_cast<AST::BlockStatement>(node));
         break;
@@ -46,6 +50,7 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         break;
     }
     default:
+        std::cout << "Unknown node type" << std::endl;
         break;
     }
 };
@@ -79,28 +84,85 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
     if(left_type == this->type_map["int"] && right_type == this->type_map["int"]) {
         if(op == token::TokenType::Plus) {
             result_value = this->llvm_ir_builder.CreateAdd(left_value, right_value, "addtmp");
+            result_type = this->type_map["int"];
         } else if(op == token::TokenType::Dash) {
             result_value = this->llvm_ir_builder.CreateSub(left_value, right_value, "subtmp");
+            result_type = this->type_map["int"];
         } else if(op == token::TokenType::Asterisk) {
             result_value = this->llvm_ir_builder.CreateMul(left_value, right_value, "multmp");
+            result_type = this->type_map["int"];
         } else if(op == token::TokenType::ForwardSlash) {
             result_value = this->llvm_ir_builder.CreateSDiv(left_value, right_value, "divtmp");
+            result_type = this->type_map["int"];
+        } else if(op == token::TokenType::GreaterThan) {
+            result_value = this->llvm_ir_builder.CreateICmpSGT(left_value, right_value, "gttmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::LessThan) {
+            result_value = this->llvm_ir_builder.CreateICmpSLT(left_value, right_value, "lttmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::EqualEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpEQ(left_value, right_value, "eqtmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::GreaterThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpSGE(left_value, right_value, "getmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::LessThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpSLE(left_value, right_value, "letmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::NotEquals) {
+            result_value = this->llvm_ir_builder.CreateICmpNE(left_value, right_value, "netmp");
+            result_type = this->type_map["bool"];
         } else {
             std::cout << "Unknown operator" << std::endl;
         }
-        result_type = this->type_map["int"];
     } else if(left_type == this->type_map["float"] && right_type == this->type_map["float"]) {
         if(op == token::TokenType::Plus) {
             result_value = this->llvm_ir_builder.CreateFAdd(left_value, right_value, "addtmp");
+            result_type = this->type_map["float"];
         } else if(op == token::TokenType::Dash) {
             result_value = this->llvm_ir_builder.CreateFSub(left_value, right_value, "subtmp");
+            result_type = this->type_map["float"];
         } else if(op == token::TokenType::Asterisk) {
             result_value = this->llvm_ir_builder.CreateFMul(left_value, right_value, "multmp");
+            result_type = this->type_map["float"];
         } else if(op == token::TokenType::ForwardSlash) {
             result_value = this->llvm_ir_builder.CreateFDiv(left_value, right_value, "divtmp");
+            result_type = this->type_map["float"];
+        } else if(op == token::TokenType::GreaterThan) {
+            result_value = this->llvm_ir_builder.CreateFCmpOGT(left_value, right_value, "gttmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::LessThan) {
+            result_value = this->llvm_ir_builder.CreateFCmpOLT(left_value, right_value, "lttmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::EqualEqual) {
+            result_value = this->llvm_ir_builder.CreateFCmpOEQ(left_value, right_value, "eqtmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::GreaterThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateFCmpOGE(left_value, right_value, "getmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::LessThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateFCmpOLE(left_value, right_value, "letmp");
+            result_type = this->type_map["bool"];
+        } else if(op == token::TokenType::NotEquals) {
+            result_value = this->llvm_ir_builder.CreateFCmpONE(left_value, right_value, "netmp");
+            result_type = this->type_map["bool"];
+        } else {
+            std::cout << "Unknown operator" << std::endl;
         }
-        result_type = this->type_map["float"];
     }
+    //  else if(left_type == this->type_map["bool"] && right_type == this->type_map["bool"]) {
+    //     if(op == token::TokenType::And) {
+    //         result_value = this->llvm_ir_builder.CreateAnd(left_value, right_value, "andtmp");
+    //         result_type = this->type_map["bool"];
+    //     } else if(op == token::TokenType::Or) {
+    //         result_value = this->llvm_ir_builder.CreateOr(left_value, right_value, "ortmp");
+    //         result_type = this->type_map["bool"];
+    //     } else {
+    //         std::cout << "Unknown operator" << std::endl;
+    //     }
+    // } else {
+    //     std::cout << "Unknown operator" << std::endl;
+    // }
     return {result_value, result_type};
 };
 
@@ -133,6 +195,35 @@ void compiler::Compiler::_visitVariableAssignmentStatement(std::shared_ptr<AST::
     }
 };
 
+void compiler::Compiler::_visitIfElseStatement(std::shared_ptr<AST::IfElseStatement> if_statement) {
+    auto condition = if_statement->condition;
+    auto consequence = if_statement->consequence;
+    auto alternative = if_statement->alternative;
+    auto [condition_val, _] = this->_resolveValue(condition);
+    if(alternative == nullptr) {
+        auto func = this->llvm_ir_builder.GetInsertBlock()->getParent();
+        llvm::BasicBlock* ThenBB = llvm::BasicBlock::Create(llvm_context, "then", func);
+        llvm::BasicBlock* ContBB = llvm::BasicBlock::Create(llvm_context, "cont", func);
+        this->llvm_ir_builder.CreateCondBr(condition_val, ThenBB, ContBB);
+        this->llvm_ir_builder.SetInsertPoint(ThenBB);
+        this->compile(consequence);
+        this->llvm_ir_builder.CreateBr(ContBB);
+        this->llvm_ir_builder.SetInsertPoint(ContBB);
+    } else {
+        auto func = this->llvm_ir_builder.GetInsertBlock()->getParent();
+        llvm::BasicBlock* ThenBB = llvm::BasicBlock::Create(llvm_context, "then", func);
+        llvm::BasicBlock* ElseBB = llvm::BasicBlock::Create(llvm_context, "else", func);
+        llvm::BasicBlock* ContBB = llvm::BasicBlock::Create(llvm_context, "cont", func);
+        this->llvm_ir_builder.CreateCondBr(condition_val, ThenBB, ElseBB);
+        this->llvm_ir_builder.SetInsertPoint(ThenBB);
+        this->compile(consequence);
+        this->llvm_ir_builder.CreateBr(ContBB);
+        this->llvm_ir_builder.SetInsertPoint(ElseBB);
+        this->compile(alternative);
+        this->llvm_ir_builder.CreateBr(ContBB);
+        this->llvm_ir_builder.SetInsertPoint(ContBB);
+    }
+};
 void compiler::Compiler::_visitBlockStatement(std::shared_ptr<AST::BlockStatement> block_statement) {
     for(auto stmt : block_statement->statements) {
         this->compile(stmt);
@@ -162,6 +253,7 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
     this->enviornment = enviornment::Enviornment(prev_env, {}, name);
     this->enviornment.add(name, func->getFunctionType(), func, nullptr);
+    this->current_function = func;
     this->compile(body);
     this->enviornment = *prev_env;
     this->enviornment.add(name, func->getFunctionType(), func, nullptr);
@@ -193,9 +285,7 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
     case AST::NodeType::IdentifierLiteral: {
         auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);
         auto [value, type, alloca] = this->enviornment.get(identifier_literal->value);
-        std::cout << "some thing is going to fuck\n";
         auto x = std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(type, alloca, identifier_literal->value), type};
-        std::cout << "it is not fucked\n";
         return x;
     }
     case AST::NodeType::ExpressionStatement: {

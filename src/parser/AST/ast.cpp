@@ -32,6 +32,8 @@ std::shared_ptr<std::string> AST::nodeTypeToString(NodeType type) {
         return std::make_shared<std::string>("IdentifierLiteral");
     case NodeType::BooleanLiteral:
         return std::make_shared<std::string>("BooleanLiteral");
+    case NodeType::IfElseStatement:
+        return std::make_shared<std::string>("IfElseStatement");
     default:
         return std::make_shared<std::string>("UNKNOWN");
     }
@@ -100,6 +102,15 @@ std::shared_ptr<nlohmann::json> AST::FunctionStatement::parameter::toJSON() {
     jsonAst["param_type"] = *nodeTypeToString(this->type());
     jsonAst["param_name"] = *this->name->toJSON();
     jsonAst["type"] = *this->value_type->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::IfElseStatement::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["condition"] = *this->condition->toJSON();
+    jsonAst["consequence"] = *this->consequence->toJSON();
+    jsonAst["alternative"] = this->alternative == nullptr ? nullptr : *this->alternative->toJSON();
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 

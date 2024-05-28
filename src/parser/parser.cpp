@@ -35,6 +35,8 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseStatement() {
         return this->_parseReturnStatement();
     } else if(this->_currentTokenIs(token::TokenType::Def)) {
         return this->_parseFunctionStatement();
+    } else if(this->_currentTokenIs(token::TokenType::If)) {
+        return this->_parseIfElseStatement();
     } else
         return this->_parseExpressionStatement();
 }
@@ -194,6 +196,26 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseExpression(PrecedenceType
     return leftExpr;
 }
 
+std::shared_ptr<AST::Statement> parser::Parser::_parseIfElseStatement() {
+    if(!this->_expectPeek(token::TokenType::LeftParen)) {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto condition = this->_parseExpression(PrecedenceType::LOWEST);
+    if(!this->_expectPeek(token::TokenType::RightParen)) {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto consequence = this->_parseStatement();
+    std::shared_ptr<AST::Statement> alternative = nullptr;
+    if(this->_peekTokenIs(token::TokenType::Else)) {
+        this->_nextToken();
+        this->_nextToken();
+        alternative = this->_parseStatement();
+    }
+    return std::make_shared<AST::IfElseStatement>(condition, consequence, alternative);
+}
+
 std::shared_ptr<AST::Expression> parser::Parser::_parseInfixExpression(std::shared_ptr<AST::Expression> leftNode) {
     auto infixExpr = std::make_shared<AST::InfixExpression>(leftNode, this->current_token->type);
     auto precedence = this->_currentPrecedence();
@@ -210,6 +232,7 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseGroupedExpression() {
     }
     return expr;
 }
+
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseIntegerLiteral() {
     auto expr = std::make_shared<AST::IntegerLiteral>(std::stoll(current_token->literal));
