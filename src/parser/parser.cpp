@@ -79,7 +79,10 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
     }
     this->_nextToken();
     auto returnType = this->_parseType();
-    auto body = this->_parseStatement();
+    if(!this->_expectPeek(token::TokenType::LeftBrace)) {
+        return nullptr;
+    }
+    auto body = this->_parseBlockStatement();
     return std::make_shared<AST::FunctionStatement>(name, parameters, returnType, body);
 }
 

@@ -1,2 +1,4 @@
-x: int = 1;
-y: int = x + 2;
+def main() -> int {
+    x: int = 0;
+    return x;
+}

@@ -22,6 +22,19 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
     }
     case AST::NodeType::VariableDeclarationStatement: {
         this->_visitVariableDeclarationStatement(std::static_pointer_cast<AST::VariableDeclarationStatement>(node));
+        break;
+    }
+    case AST::NodeType::BlockStatement: {
+        this->_visitBlockStatement(std::static_pointer_cast<AST::BlockStatement>(node));
+        break;
+    }
+    case AST::NodeType::FunctionStatement: {
+        this->_visitFunctionDeclarationStatement(std::static_pointer_cast<AST::FunctionStatement>(node));
+        break;
+    }
+    case AST::NodeType::ReturnStatement: {
+        this->_visitReturnStatement(std::static_pointer_cast<AST::ReturnStatement>(node));
+        break;
     }
     case AST::NodeType::BooleanLiteral: {
         auto boolean_literal = std::static_pointer_cast<AST::BooleanLiteral>(node);
@@ -34,17 +47,17 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
 };
 
 void compiler::Compiler::_visitProgram(std::shared_ptr<AST::Program> program) {
-    std::string entry_point_name = "main";
-    auto param_types = std::vector<llvm::Type*>();
-    auto return_type = this->type_map["int"];
-    auto func_type = llvm::FunctionType::get(return_type, param_types, false);
-    auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, entry_point_name, this->llvm_module.get());
-    auto bb = llvm::BasicBlock::Create(llvm_context, "entry", func);
-    this->llvm_ir_builder.SetInsertPoint(bb);
+    // std::string entry_point_name = "main";
+    // auto param_types = std::vector<llvm::Type*>();
+    // auto return_type = this->type_map["int"];
+    // auto func_type = llvm::FunctionType::get(return_type, param_types, false);
+    // auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, entry_point_name, this->llvm_module.get());
+    // auto bb = llvm::BasicBlock::Create(llvm_context, "entry", func);
+    // this->llvm_ir_builder.SetInsertPoint(bb);
     for(auto stmt : program->statements) {
         this->compile(stmt);
     }
-    this->llvm_ir_builder.CreateRet(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true)));
+    // this->llvm_ir_builder.CreateRet(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true)));
 };
 
 void compiler::Compiler::_visitExpressionStatement(std::shared_ptr<AST::ExpressionStatement> expression_statement) {
@@ -104,6 +117,46 @@ void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST:
     }
 };
 
+void compiler::Compiler::_visitBlockStatement(std::shared_ptr<AST::BlockStatement> block_statement) {
+    for(auto stmt : block_statement->statements) {
+        this->compile(stmt);
+    }
+};
+
+void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST::FunctionStatement> function_declaration_statement) {
+    auto name = std::static_pointer_cast<AST::IdentifierLiteral>(function_declaration_statement->name)->value;
+    auto body = function_declaration_statement->body;
+    auto params = function_declaration_statement->parameters;
+    auto param_types = std::vector<llvm::Type*>();
+    auto param_names = std::vector<std::string>();
+    for(auto param : params) {
+        param_names.push_back(std::static_pointer_cast<AST::IdentifierLiteral>(param->name)->value);
+        param_types.push_back(
+            this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(std::dynamic_pointer_cast<AST::GenericType>(param->value_type)->name)
+                               ->value]);
+    }
+    auto return_type = this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(
+                                          std::dynamic_pointer_cast<AST::GenericType>(function_declaration_statement->returnType)->name)
+                                          ->value];
+    auto func_type = llvm::FunctionType::get(return_type, param_types, false);
+    auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, name, this->llvm_module.get());
+    auto bb = llvm::BasicBlock::Create(llvm_context, name + "_entry", func);
+    this->llvm_ir_builder.SetInsertPoint(bb);
+    // ignore the parameters for now
+    auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
+    this->enviornment = enviornment::Enviornment(prev_env, {}, name);
+    this->enviornment.add(name, func->getFunctionType(), func, nullptr);
+    this->compile(body);
+    this->enviornment = *prev_env;
+    this->enviornment.add(name, func->getFunctionType(), func, nullptr);
+}
+
+void compiler::Compiler::_visitReturnStatement(std::shared_ptr<AST::ReturnStatement> return_statement) {
+    auto value = return_statement->value;
+    auto [return_value, return_type] = this->_resolveValue(value);
+    this->llvm_ir_builder.CreateRet(return_value);
+};
+
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::shared_ptr<AST::Node> node) {
     switch(node->type()) {
     case AST::NodeType::IntegerLiteral: {
@@ -126,7 +179,7 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         auto [value, type, alloca] = this->enviornment.get(identifier_literal->value);
         std::cout << "some thing is going to fuck\n";
         auto x = std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(type, alloca, identifier_literal->value), type};
-        std::cout << "it is not fucked";
+        std::cout << "it is not fucked\n";
         return x;
     }
     case AST::NodeType::ExpressionStatement: {
