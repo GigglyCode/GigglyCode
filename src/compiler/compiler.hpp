@@ -26,6 +26,8 @@ class Compiler {
     void compile(std::shared_ptr<AST::Node> node);
 
   private:
+    void _initializeBuiltins();
+
     void _visitProgram(std::shared_ptr<AST::Program> program);
 
     void _visitExpressionStatement(std::shared_ptr<AST::ExpressionStatement> expression_statement);

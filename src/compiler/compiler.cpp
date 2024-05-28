@@ -2,10 +2,24 @@
 
 compiler::Compiler::Compiler() : llvm_context(llvm::LLVMContext()), llvm_ir_builder(llvm_context) {
     this->llvm_module = std::make_unique<llvm::Module>("main", llvm_context);
+    this->_initializeBuiltins();
+}
+
+void compiler::Compiler::_initializeBuiltins() {
     this->type_map["int"] = llvm::Type::getInt32Ty(llvm_context);
     this->type_map["float"] = llvm::Type::getFloatTy(llvm_context);
     this->type_map["bool"] = llvm::Type::getInt1Ty(llvm_context);
-}
+
+    // Create the global variable 'true'
+    llvm::GlobalVariable* globalTrue = new llvm::GlobalVariable(*this->llvm_module, this->type_map["bool"], true, llvm::GlobalValue::ExternalLinkage,
+                                                                llvm::ConstantInt::get(this->type_map["bool"], 1), "True");
+
+    // Create the global variable 'false'
+    llvm::GlobalVariable* globalFalse = new llvm::GlobalVariable(*this->llvm_module, this->type_map["bool"], true, llvm::GlobalValue::ExternalLinkage,
+                                                                 llvm::ConstantInt::get(this->type_map["bool"], 0), "False");
+    this->enviornment.add("True", this->type_map["bool"], globalTrue, nullptr);
+    this->enviornment.add("False", this->type_map["bool"], globalFalse, nullptr);
+};
 
 void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
     switch(node->type()) {
