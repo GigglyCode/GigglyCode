@@ -24,6 +24,10 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         this->_visitVariableDeclarationStatement(std::static_pointer_cast<AST::VariableDeclarationStatement>(node));
         break;
     }
+    case AST::NodeType::VariableAssignmentStatement: {
+        this->_visitVariableAssignmentStatement(std::static_pointer_cast<AST::VariableAssignmentStatement>(node));
+        break;
+    }
     case AST::NodeType::BlockStatement: {
         this->_visitBlockStatement(std::static_pointer_cast<AST::BlockStatement>(node));
         break;
@@ -114,6 +118,18 @@ void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST:
         this->enviornment.add(var_name->value, var_type, value, alloca);
     } else {
         std::cout << "Variable already declared" << std::endl;
+    }
+};
+
+void compiler::Compiler::_visitVariableAssignmentStatement(std::shared_ptr<AST::VariableAssignmentStatement> variable_assignment_statement) {
+    auto var_name = std::static_pointer_cast<AST::IdentifierLiteral>(variable_assignment_statement->name);
+    auto var_value = variable_assignment_statement->value;
+    auto [value, type] = this->_resolveValue(var_value);
+    if(this->enviornment.get(var_name->value) != std::make_tuple(nullptr, nullptr, nullptr)) {
+        auto [_, __, alloca] = this->enviornment.get(var_name->value);
+        this->llvm_ir_builder.CreateStore(value, alloca);
+    } else {
+        std::cout << "Variable not declared" << std::endl;
     }
 };
 

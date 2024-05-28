@@ -12,7 +12,6 @@
 #include <unordered_map>
 
 
-
 namespace compiler {
 class Compiler {
   public:
@@ -34,6 +33,7 @@ class Compiler {
     std::tuple<llvm::Value*, llvm::Type*> _visitInfixExpression(std::shared_ptr<AST::InfixExpression> infixed_expression);
 
     void _visitVariableDeclarationStatement(std::shared_ptr<AST::VariableDeclarationStatement> variable_declaration_statement);
+    void _visitVariableAssignmentStatement(std::shared_ptr<AST::VariableAssignmentStatement> variable_assignment_statement);
 
     void _visitFunctionDeclarationStatement(std::shared_ptr<AST::FunctionStatement> function_declaration_statement);
     void _visitReturnStatement(std::shared_ptr<AST::ReturnStatement> return_statement);
