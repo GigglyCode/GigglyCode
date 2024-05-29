@@ -4,6 +4,5 @@ def add(x: int, y: int) -> int {
 }
 
 def main() -> int {
-    return 0;
-    # return return_1(1, 2);
+    return add(1, 2);
 }

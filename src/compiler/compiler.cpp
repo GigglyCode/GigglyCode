@@ -292,11 +292,16 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
 
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(std::shared_ptr<AST::CallExpression> call_expression) {
     auto name = std::static_pointer_cast<AST::IdentifierLiteral>(call_expression->name)->value;
-    // auto param = call_expression->arguments;
+    auto param = call_expression->arguments;
+    auto args = std::vector<llvm::Value*>();
+    for(auto arg : param) {
+        auto [value, type] = this->_resolveValue(arg);
+        args.push_back(value);
+    }
     if(this->enviornment.get(name) != std::make_tuple(nullptr, nullptr, nullptr)) {
         auto [func, func_type, _] = this->enviornment.get(name);
-        auto x = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func), {}, "calltmp");
-        return {x, func_type};
+        auto returnValue = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func), args, "calltmp");
+        return {returnValue, func_type};
     }
     std::cout << "Function not declared" << std::endl;
     return {nullptr, nullptr};
