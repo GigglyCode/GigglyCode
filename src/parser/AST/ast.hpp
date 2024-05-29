@@ -13,6 +13,7 @@ enum class NodeType {
     VariableDeclarationStatement,
     VariableAssignmentStatement,
     FunctionStatement,
+    CallExpression,
     BlockStatement,
     ReturnStatement,
     IfElseStatement,
@@ -108,6 +109,16 @@ class FunctionStatement : public Statement {
                              std::shared_ptr<BaseType> returnType, std::shared_ptr<BlockStatement> body)
         : name(name), parameters(parameters), returnType(returnType), body(body) {}
     inline NodeType type() override { return NodeType::FunctionStatement; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
+class CallExpression : public Expression {
+  public:
+    std::shared_ptr<Expression> name;
+    std::vector<std::shared_ptr<Expression>> arguments;
+    inline CallExpression(std::shared_ptr<Expression> name, std::vector<std::shared_ptr<Expression>> arguments = {})
+        : name(name), arguments(arguments) {}
+    inline NodeType type() override { return NodeType::CallExpression; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
 

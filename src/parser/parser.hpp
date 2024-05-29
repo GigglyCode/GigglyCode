@@ -109,6 +109,7 @@ class Parser {
     std::shared_ptr<AST::Statement> _parseVariableAssignment();
     std::shared_ptr<AST::ReturnStatement> _parseReturnStatement();
     std::shared_ptr<AST::FunctionStatement> _parseFunctionStatement();
+    std::shared_ptr<AST::Expression> _parseFunctionCall();
     std::shared_ptr<AST::BlockStatement> _parseBlockStatement();
     std::shared_ptr<AST::Statement> _parseIfElseStatement();
 

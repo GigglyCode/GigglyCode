@@ -54,6 +54,10 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         this->_visitFunctionDeclarationStatement(std::static_pointer_cast<AST::FunctionStatement>(node));
         break;
     }
+    case AST::NodeType::CallExpression: {
+        this->_visitCallExpression(std::static_pointer_cast<AST::CallExpression>(node));
+        break;
+    }
     case AST::NodeType::ReturnStatement: {
         this->_visitReturnStatement(std::static_pointer_cast<AST::ReturnStatement>(node));
         break;
@@ -238,6 +242,7 @@ void compiler::Compiler::_visitIfElseStatement(std::shared_ptr<AST::IfElseStatem
         this->llvm_ir_builder.SetInsertPoint(ContBB);
     }
 };
+
 void compiler::Compiler::_visitBlockStatement(std::shared_ptr<AST::BlockStatement> block_statement) {
     for(auto stmt : block_statement->statements) {
         this->compile(stmt);
@@ -273,6 +278,18 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     this->enviornment.add(name, func->getFunctionType(), func, nullptr);
 }
 
+std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(std::shared_ptr<AST::CallExpression> call_expression) {
+    auto name = std::static_pointer_cast<AST::IdentifierLiteral>(call_expression->name)->value;
+    // auto param = call_expression->arguments;
+    if(this->enviornment.get(name) != std::make_tuple(nullptr, nullptr, nullptr)) {
+        auto [func, func_type, _] = this->enviornment.get(name);
+        auto x = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func), {}, "calltmp");
+        return {x, func_type};
+    }
+    std::cout << "Function not declared" << std::endl;
+    return {nullptr, nullptr};
+};
+
 void compiler::Compiler::_visitReturnStatement(std::shared_ptr<AST::ReturnStatement> return_statement) {
     auto value = return_statement->value;
     auto [return_value, return_type] = this->_resolveValue(value);
@@ -301,6 +318,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         auto [value, type, alloca] = this->enviornment.get(identifier_literal->value);
         auto x = std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(type, alloca, identifier_literal->value), type};
         return x;
+    }
+    case AST::NodeType::CallExpression: {
+        auto call_expression = std::static_pointer_cast<AST::CallExpression>(node);
+        return this->_visitCallExpression(call_expression);
     }
     case AST::NodeType::ExpressionStatement: {
         auto expression_statement = std::static_pointer_cast<AST::ExpressionStatement>(node);

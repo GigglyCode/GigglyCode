@@ -40,6 +40,7 @@ class Compiler {
     void _visitIfElseStatement(std::shared_ptr<AST::IfElseStatement> if_statement);
 
     void _visitFunctionDeclarationStatement(std::shared_ptr<AST::FunctionStatement> function_declaration_statement);
+    std::tuple<llvm::Value*, llvm::Type*> _visitCallExpression(std::shared_ptr<AST::CallExpression>);
     void _visitReturnStatement(std::shared_ptr<AST::ReturnStatement> return_statement);
     void _visitBlockStatement(std::shared_ptr<AST::BlockStatement> block_statement);
 

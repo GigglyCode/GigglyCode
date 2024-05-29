@@ -12,6 +12,8 @@ std::shared_ptr<std::string> AST::nodeTypeToString(NodeType type) {
         return std::make_shared<std::string>("VariableAssignmentStatement");
     case NodeType::FunctionStatement:
         return std::make_shared<std::string>("FunctionStatement");
+    case NodeType::CallExpression:
+        return std::make_shared<std::string>("CallExpression");
     case NodeType::BlockStatement:
         return std::make_shared<std::string>("BlockStatement");
     case NodeType::ReturnStatement:
@@ -102,6 +104,17 @@ std::shared_ptr<nlohmann::json> AST::FunctionStatement::parameter::toJSON() {
     jsonAst["param_type"] = *nodeTypeToString(this->type());
     jsonAst["param_name"] = *this->name->toJSON();
     jsonAst["type"] = *this->value_type->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::CallExpression::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["name"] = *this->name->toJSON();
+    jsonAst["arguments"] = nlohmann::json::array();
+    for(auto& arg : this->arguments) {
+        jsonAst["arguments"].push_back(*arg->toJSON());
+    }
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 

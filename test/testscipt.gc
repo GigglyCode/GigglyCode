@@ -1,14 +1,8 @@
 
+def return_1() -> int {
+    return 1
+}
+
 def main() -> int {
-    x: int = 0;
-    if (x == 0) {
-        x = 1;
-    }
-    else if (x == 1) {
-        x = 3;
-    }
-    else {
-        x = 2;
-    }
-    return x;
+    return return_1()
 }

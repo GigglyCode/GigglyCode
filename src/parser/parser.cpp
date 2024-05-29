@@ -88,6 +88,13 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
     return std::make_shared<AST::FunctionStatement>(name, parameters, returnType, body);
 }
 
+std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall() {
+    auto identifier = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
+    this->_nextToken();
+    this->_nextToken();
+    return std::make_shared<AST::CallExpression>(identifier);
+}
+
 std::shared_ptr<AST::ReturnStatement> parser::Parser::_parseReturnStatement() {
     this->_nextToken();
     auto expr = this->_parseExpression(PrecedenceType::LOWEST);
@@ -255,6 +262,9 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseStringLiteral() {
 }
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseIdentifier() {
+    if(this->_peekTokenIs(token::TokenType::LeftParen)) {
+        return this->_parseFunctionCall();
+    }
     auto expr = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
     return expr;
 }
