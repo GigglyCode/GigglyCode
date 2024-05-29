@@ -13,6 +13,7 @@ enum class NodeType {
     VariableDeclarationStatement,
     VariableAssignmentStatement,
     FunctionStatement,
+    FunctionParameter,
     CallExpression,
     BlockStatement,
     ReturnStatement,
@@ -91,21 +92,22 @@ class ReturnStatement : public Statement {
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
 
+class FunctionParameter : public Node {
+  public:
+    std::shared_ptr<Expression> name;
+    std::shared_ptr<BaseType> value_type;
+    inline FunctionParameter(std::shared_ptr<Expression> name, std::shared_ptr<BaseType> type) : name(name), value_type(type) {}
+    inline NodeType type() override { return NodeType::FunctionParameter; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
 class FunctionStatement : public Statement {
   public:
-    class parameter : public Node {
-      public:
-        std::shared_ptr<Expression> name;
-        std::shared_ptr<BaseType> value_type;
-        inline parameter(std::shared_ptr<Expression> name, std::shared_ptr<BaseType> type) : name(name), value_type(type) {}
-        inline NodeType type() override { return NodeType::Type; };
-        std::shared_ptr<nlohmann::json> toJSON() override;
-    };
     std::shared_ptr<Expression> name;
-    std::vector<std::shared_ptr<parameter>> parameters;
+    std::vector<std::shared_ptr<FunctionParameter>> parameters;
     std::shared_ptr<BaseType> returnType;
     std::shared_ptr<BlockStatement> body;
-    inline FunctionStatement(std::shared_ptr<Expression> name, std::vector<std::shared_ptr<parameter>> parameters,
+    inline FunctionStatement(std::shared_ptr<Expression> name, std::vector<std::shared_ptr<FunctionParameter>> parameters,
                              std::shared_ptr<BaseType> returnType, std::shared_ptr<BlockStatement> body)
         : name(name), parameters(parameters), returnType(returnType), body(body) {}
     inline NodeType type() override { return NodeType::FunctionStatement; };

@@ -50,9 +50,8 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
         return nullptr;
     }
     this->_nextToken();
-    std::vector<std::shared_ptr<AST::FunctionStatement::parameter>> parameters;
+    std::vector<std::shared_ptr<AST::FunctionParameter>> parameters;
     while(this->current_token->type != token::TokenType::RightParen) {
-        std::cout << (this->current_token->type == token::TokenType::Identifier);
         if(this->current_token->type == token::TokenType::Identifier) {
             auto identifier = std::make_shared<AST::IdentifierLiteral>(this->current_token->literal);
             if(!this->_expectPeek(token::TokenType::Colon)) {
@@ -60,7 +59,7 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
             }
             this->_nextToken();
             auto type = this->_parseType();
-            parameters.push_back(std::make_shared<AST::FunctionStatement::parameter>(identifier, type));
+            parameters.push_back(std::make_shared<AST::FunctionParameter>(identifier, type));
             this->_nextToken();
             if(this->current_token->type == token::TokenType::Comma) {
                 this->_nextToken();
@@ -91,8 +90,27 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
 std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall() {
     auto identifier = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
     this->_nextToken();
+    auto args = this->_parse_expression_list(token::TokenType::RightParen);
+    return std::make_shared<AST::CallExpression>(identifier, args);
+}
+
+std::vector<std::shared_ptr<AST::Expression>> parser::Parser::_parse_expression_list(token::TokenType end) {
+    std::vector<std::shared_ptr<AST::Expression>> args;
+    if(this->_peekTokenIs(end)) {
+        this->_nextToken();
+        return args;
+    }
     this->_nextToken();
-    return std::make_shared<AST::CallExpression>(identifier);
+    args.push_back(this->_parseExpression(PrecedenceType::LOWEST));
+    while(this->_peekTokenIs(token::TokenType::Comma)) {
+        this->_nextToken();
+        this->_nextToken();
+        args.push_back(this->_parseExpression(PrecedenceType::LOWEST));
+    }
+    if(!this->_expectPeek(end)) {
+        return std::vector<std::shared_ptr<AST::Expression>>{};
+    }
+    return args;
 }
 
 std::shared_ptr<AST::ReturnStatement> parser::Parser::_parseReturnStatement() {

@@ -1,8 +1,9 @@
 
-def return_1() -> int {
-    return 1
+def add(x: int, y: int) -> int {
+    return x + y;
 }
 
 def main() -> int {
-    return return_1()
+    return 0;
+    # return return_1(1, 2);
 }

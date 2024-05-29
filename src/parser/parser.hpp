@@ -124,6 +124,8 @@ class Parser {
     std::shared_ptr<AST::Expression> _parseGroupedExpression();
     std::shared_ptr<AST::Expression> _parseIdentifier();
 
+    std::vector<std::shared_ptr<AST::Expression>> _parse_expression_list(token::TokenType end);
+
     std::shared_ptr<AST::Expression> _parseInfixExpression(std::shared_ptr<AST::Expression> leftNode);
 }; // class Parser
 } // namespace parser

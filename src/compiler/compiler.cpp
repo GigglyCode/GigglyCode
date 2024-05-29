@@ -253,10 +253,10 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     auto name = std::static_pointer_cast<AST::IdentifierLiteral>(function_declaration_statement->name)->value;
     auto body = function_declaration_statement->body;
     auto params = function_declaration_statement->parameters;
-    auto param_types = std::vector<llvm::Type*>();
-    auto param_names = std::vector<std::string>();
+    std::vector<std::string> param_name;
+    std::vector<llvm::Type*> param_types;
     for(auto param : params) {
-        param_names.push_back(std::static_pointer_cast<AST::IdentifierLiteral>(param->name)->value);
+        param_name.push_back(std::static_pointer_cast<AST::IdentifierLiteral>(param->name)->value);
         param_types.push_back(
             this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(std::dynamic_pointer_cast<AST::GenericType>(param->value_type)->name)
                                ->value]);
@@ -266,12 +266,24 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
                                           ->value];
     auto func_type = llvm::FunctionType::get(return_type, param_types, false);
     auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, name, this->llvm_module.get());
+
+    // name the parameters
+    unsigned idx = 0;
+    for(auto& arg : func->args()) {
+        arg.setName(param_name[idx++]);
+    }
     auto bb = llvm::BasicBlock::Create(llvm_context, name + "_entry", func);
     this->llvm_ir_builder.SetInsertPoint(bb);
-    // ignore the parameters for now
+
     auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
     this->enviornment = enviornment::Enviornment(prev_env, {}, name);
     this->enviornment.add(name, func->getFunctionType(), func, nullptr);
+    // adding the alloca for the parameters
+    for(auto& arg : func->args()) {
+        auto alloca = this->llvm_ir_builder.CreateAlloca(arg.getType(), nullptr, arg.getName());
+        this->llvm_ir_builder.CreateStore(&arg, alloca);
+        this->enviornment.add(std::string(arg.getName()), arg.getType(), &arg, alloca);
+    }
     this->current_function = func;
     this->compile(body);
     this->enviornment = *prev_env;
@@ -332,6 +344,7 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         return this->_visitInfixExpression(infix_expression);
     }
     default:
+        std::cout << "Unknown node type" << std::endl;
         return {nullptr, nullptr};
     }
 }
