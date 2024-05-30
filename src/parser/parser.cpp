@@ -332,7 +332,7 @@ void parser::Parser::_peekError(token::TokenType type, token::TokenType expected
 }
 
 void parser::Parser::_noPrefixParseFnError(token::TokenType type) {
-    std::shared_ptr<errors::NoPrefixParseFnError> error = std::make_shared<errors::NoPrefixParseFnError>(
-        this->lexer->source, *peek_token, "No prefix parse function for " + *token::tokenTypeString(type));
-    this->errors.push_back(error);
+    // std::shared_ptr<errors::NoPrefixParseFnError> error = std::make_shared<errors::NoPrefixParseFnError>(
+    //     this->lexer->source, *peek_token, "No prefix parse function for " + *token::tokenTypeString(type));
+    // this->errors.push_back(error);
 }

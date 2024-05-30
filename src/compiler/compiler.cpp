@@ -274,7 +274,6 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     }
     auto bb = llvm::BasicBlock::Create(llvm_context, name + "_entry", func);
     this->llvm_ir_builder.SetInsertPoint(bb);
-
     auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
     this->enviornment = enviornment::Enviornment(prev_env, {}, name);
     this->enviornment.add(name, func->getFunctionType(), func, nullptr);
