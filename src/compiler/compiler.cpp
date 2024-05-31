@@ -6,20 +6,22 @@ compiler::Compiler::Compiler() : llvm_context(llvm::LLVMContext()), llvm_ir_buil
 }
 
 void compiler::Compiler::_initializeBuiltins() {
-    this->type_map["int"] = llvm::Type::getInt32Ty(llvm_context);
-    this->type_map["float"] = llvm::Type::getFloatTy(llvm_context);
-    this->type_map["bool"] = llvm::Type::getInt1Ty(llvm_context);
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("int", llvm::Type::getInt32Ty(llvm_context)));
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("float", llvm::Type::getFloatTy(llvm_context)));
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("bool", llvm::Type::getInt1Ty(llvm_context)));
 
     // Create the global variable 'true'
-    llvm::GlobalVariable* globalTrue = new llvm::GlobalVariable(*this->llvm_module, this->type_map["bool"], true, llvm::GlobalValue::ExternalLinkage,
-                                                                llvm::ConstantInt::get(this->type_map["bool"], 1), "True");
+    llvm::GlobalVariable* globalTrue =
+        new llvm::GlobalVariable(*this->llvm_module, this->enviornment.get_builtin_type("bool"), true, llvm::GlobalValue::ExternalLinkage,
+                                 llvm::ConstantInt::get(this->enviornment.get_builtin_type("bool"), 1), "True");
 
     // Create the global variable 'false'
-    llvm::GlobalVariable* globalFalse = new llvm::GlobalVariable(*this->llvm_module, this->type_map["bool"], true, llvm::GlobalValue::ExternalLinkage,
-                                                                 llvm::ConstantInt::get(this->type_map["bool"], 0), "False");
-    auto recordTrue = std::make_shared<enviornment::RecordVariable>("True", globalTrue, this->type_map["bool"], nullptr);
+    llvm::GlobalVariable* globalFalse =
+        new llvm::GlobalVariable(*this->llvm_module, this->enviornment.get_builtin_type("bool"), true, llvm::GlobalValue::ExternalLinkage,
+                                 llvm::ConstantInt::get(this->enviornment.get_builtin_type("bool"), 0), "False");
+    auto recordTrue = std::make_shared<enviornment::RecordVariable>("True", globalTrue, this->enviornment.get_builtin_type("bool"), nullptr);
     this->enviornment.add(recordTrue);
-    auto recordFalse = std::make_shared<enviornment::RecordVariable>("False", globalFalse, this->type_map["bool"], nullptr);
+    auto recordFalse = std::make_shared<enviornment::RecordVariable>("False", globalFalse, this->enviornment.get_builtin_type("bool"), nullptr);
     this->enviornment.add(recordFalse);
 };
 
@@ -76,17 +78,9 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
 };
 
 void compiler::Compiler::_visitProgram(std::shared_ptr<AST::Program> program) {
-    // std::string entry_point_name = "main";
-    // auto param_types = std::vector<llvm::Type*>();
-    // auto return_type = this->type_map["int"];
-    // auto func_type = llvm::FunctionType::get(return_type, param_types, false);
-    // auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, entry_point_name, this->llvm_module.get());
-    // auto bb = llvm::BasicBlock::Create(llvm_context, "entry", func);
-    // this->llvm_ir_builder.SetInsertPoint(bb);
     for(auto stmt : program->statements) {
         this->compile(stmt);
     }
-    // this->llvm_ir_builder.CreateRet(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true)));
 };
 
 void compiler::Compiler::_visitExpressionStatement(std::shared_ptr<AST::ExpressionStatement> expression_statement) {
@@ -101,82 +95,82 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
     auto [right_value, right_type] = this->_resolveValue(right);
     llvm::Value* result_value = nullptr;
     llvm::Type* result_type = nullptr;
-    if(left_type == this->type_map["int"] && right_type == this->type_map["int"]) {
+    if(left_type == this->enviornment.get_builtin_type("int") && right_type == this->enviornment.get_builtin_type("int")) {
         if(op == token::TokenType::Plus) {
             result_value = this->llvm_ir_builder.CreateAdd(left_value, right_value, "addtmp");
-            result_type = this->type_map["int"];
+            result_type = this->enviornment.get_builtin_type("int");
         } else if(op == token::TokenType::Dash) {
             result_value = this->llvm_ir_builder.CreateSub(left_value, right_value, "subtmp");
-            result_type = this->type_map["int"];
+            result_type = this->enviornment.get_builtin_type("int");
         } else if(op == token::TokenType::Asterisk) {
             result_value = this->llvm_ir_builder.CreateMul(left_value, right_value, "multmp");
-            result_type = this->type_map["int"];
+            result_type = this->enviornment.get_builtin_type("int");
         } else if(op == token::TokenType::ForwardSlash) {
             result_value = this->llvm_ir_builder.CreateSDiv(left_value, right_value, "divtmp");
-            result_type = this->type_map["int"];
+            result_type = this->enviornment.get_builtin_type("int");
         } else if(op == token::TokenType::GreaterThan) {
             result_value = this->llvm_ir_builder.CreateICmpSGT(left_value, right_value, "gttmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::LessThan) {
             result_value = this->llvm_ir_builder.CreateICmpSLT(left_value, right_value, "lttmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::EqualEqual) {
             result_value = this->llvm_ir_builder.CreateICmpEQ(left_value, right_value, "eqtmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::GreaterThanOrEqual) {
             result_value = this->llvm_ir_builder.CreateICmpSGE(left_value, right_value, "getmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::LessThanOrEqual) {
             result_value = this->llvm_ir_builder.CreateICmpSLE(left_value, right_value, "letmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::NotEquals) {
             result_value = this->llvm_ir_builder.CreateICmpNE(left_value, right_value, "netmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else {
             std::cout << "Unknown operator" << std::endl;
         }
-    } else if(left_type == this->type_map["float"] && right_type == this->type_map["float"]) {
+    } else if(left_type == this->enviornment.get_builtin_type("float") && right_type == this->enviornment.get_builtin_type("float")) {
         if(op == token::TokenType::Plus) {
             result_value = this->llvm_ir_builder.CreateFAdd(left_value, right_value, "addtmp");
-            result_type = this->type_map["float"];
+            result_type = this->enviornment.get_builtin_type("float");
         } else if(op == token::TokenType::Dash) {
             result_value = this->llvm_ir_builder.CreateFSub(left_value, right_value, "subtmp");
-            result_type = this->type_map["float"];
+            result_type = this->enviornment.get_builtin_type("float");
         } else if(op == token::TokenType::Asterisk) {
             result_value = this->llvm_ir_builder.CreateFMul(left_value, right_value, "multmp");
-            result_type = this->type_map["float"];
+            result_type = this->enviornment.get_builtin_type("float");
         } else if(op == token::TokenType::ForwardSlash) {
             result_value = this->llvm_ir_builder.CreateFDiv(left_value, right_value, "divtmp");
-            result_type = this->type_map["float"];
+            result_type = this->enviornment.get_builtin_type("float");
         } else if(op == token::TokenType::GreaterThan) {
             result_value = this->llvm_ir_builder.CreateFCmpOGT(left_value, right_value, "gttmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::LessThan) {
             result_value = this->llvm_ir_builder.CreateFCmpOLT(left_value, right_value, "lttmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::EqualEqual) {
             result_value = this->llvm_ir_builder.CreateFCmpOEQ(left_value, right_value, "eqtmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::GreaterThanOrEqual) {
             result_value = this->llvm_ir_builder.CreateFCmpOGE(left_value, right_value, "getmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::LessThanOrEqual) {
             result_value = this->llvm_ir_builder.CreateFCmpOLE(left_value, right_value, "letmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else if(op == token::TokenType::NotEquals) {
             result_value = this->llvm_ir_builder.CreateFCmpONE(left_value, right_value, "netmp");
-            result_type = this->type_map["bool"];
+            result_type = this->enviornment.get_builtin_type("bool");
         } else {
             std::cout << "Unknown operator" << std::endl;
         }
     }
-    //  else if(left_type == this->type_map["bool"] && right_type == this->type_map["bool"]) {
+    //  else if(left_type == this->enviornment.get_builtin_type("bool") && right_type == this->enviornment.get_builtin_type("bool")) {
     //     if(op == token::TokenType::And) {
     //         result_value = this->llvm_ir_builder.CreateAnd(left_value, right_value, "andtmp");
-    //         result_type = this->type_map["bool"];
+    //         result_type = this->enviornment.get_builtin_type("bool");
     //     } else if(op == token::TokenType::Or) {
     //         result_value = this->llvm_ir_builder.CreateOr(left_value, right_value, "ortmp");
-    //         result_type = this->type_map["bool"];
+    //         result_type = this->enviornment.get_builtin_type("bool");
     //     } else {
     //         std::cout << "Unknown operator" << std::endl;
     //     }
@@ -189,9 +183,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
 void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST::VariableDeclarationStatement> variable_declaration_statement) {
     auto var_name = std::static_pointer_cast<AST::IdentifierLiteral>(variable_declaration_statement->name);
     auto var_value = variable_declaration_statement->value;
-    auto var_type = this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(
-                                       std::dynamic_pointer_cast<AST::GenericType>(variable_declaration_statement->value_type)->name)
-                                       ->value];
+    auto var_type =
+        this->enviornment.get_builtin_type(std::dynamic_pointer_cast<AST::IdentifierLiteral>(
+                                               std::dynamic_pointer_cast<AST::GenericType>(variable_declaration_statement->value_type)->name)
+                                               ->value);
     auto [value, type] = this->_resolveValue(var_value);
     if(!this->enviornment.contains(var_name->value)) {
         llvm::AllocaInst* alloca =
@@ -260,13 +255,13 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     std::vector<llvm::Type*> param_types;
     for(auto param : params) {
         param_name.push_back(std::static_pointer_cast<AST::IdentifierLiteral>(param->name)->value);
-        param_types.push_back(
-            this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(std::dynamic_pointer_cast<AST::GenericType>(param->value_type)->name)
-                               ->value]);
+        param_types.push_back(this->enviornment.get_builtin_type(
+            std::dynamic_pointer_cast<AST::IdentifierLiteral>(std::dynamic_pointer_cast<AST::GenericType>(param->value_type)->name)->value));
     }
-    auto return_type = this->type_map[std::dynamic_pointer_cast<AST::IdentifierLiteral>(
-                                          std::dynamic_pointer_cast<AST::GenericType>(function_declaration_statement->returnType)->name)
-                                          ->value];
+    auto return_type =
+        this->enviornment.get_builtin_type(std::dynamic_pointer_cast<AST::IdentifierLiteral>(
+                                               std::dynamic_pointer_cast<AST::GenericType>(function_declaration_statement->returnType)->name)
+                                               ->value);
     auto func_type = llvm::FunctionType::get(return_type, param_types, false);
     auto func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, name, this->llvm_module.get());
 
@@ -324,17 +319,17 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
     case AST::NodeType::IntegerLiteral: {
         auto integer_literal = std::static_pointer_cast<AST::IntegerLiteral>(node);
         auto value = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, integer_literal->value, true));
-        return {value, this->type_map["int"]};
+        return {value, this->enviornment.get_builtin_type("int")};
     }
     case AST::NodeType::FloatLiteral: {
         auto float_literal = std::static_pointer_cast<AST::FloatLiteral>(node);
         auto value = llvm::ConstantFP::get(llvm_context, llvm::APFloat(float_literal->value));
-        return {value, this->type_map["float"]};
+        return {value, this->enviornment.get_builtin_type("float")};
     }
     case AST::NodeType::BooleanLiteral: {
         auto boolean_literal = std::static_pointer_cast<AST::BooleanLiteral>(node);
         auto value = llvm::ConstantInt::get(llvm_context, llvm::APInt(1, boolean_literal->value, true));
-        return {value, this->type_map["bool"]};
+        return {value, this->enviornment.get_builtin_type("bool")};
     }
     case AST::NodeType::IdentifierLiteral: {
         auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);

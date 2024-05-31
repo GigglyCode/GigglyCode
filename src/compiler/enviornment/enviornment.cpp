@@ -21,6 +21,28 @@ bool enviornment::Enviornment::contains(std::string name) {
         return false;
     }
 };
+
+bool enviornment::Enviornment::is_builtin_type(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name]->type == RecordType::BuiltinType;
+    } else if(parent != nullptr) {
+        return parent->is_builtin_type(name);
+    } else {
+        return false;
+    }
+};
+
+llvm::Type* enviornment::Enviornment::get_builtin_type(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        if(record_map[name]->type == RecordType::BuiltinType) {
+            return std::static_pointer_cast<enviornment::RecordBuiltinType>(record_map[name])->type;
+        }
+    } else if(parent != nullptr) {
+        return parent->get_builtin_type(name);
+    }
+    return nullptr;
+};
+
 bool enviornment::Enviornment::is_variable(std::string name) {
     if(record_map.find(name) != record_map.end()) {
         return record_map[name]->type == RecordType::RecordVariable;

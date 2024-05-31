@@ -8,7 +8,7 @@
 
 
 namespace enviornment {
-enum class RecordType { RecordClassType, RecordEnumType, RecordVariable, RecordFunction };
+enum class RecordType { RecordClassType, RecordEnumType, BuiltinType, RecordVariable, RecordFunction };
 class Record {
   public:
     RecordType type;
@@ -24,6 +24,13 @@ class RecordClassType : public Record {
 class RecordEnumType : public Record {
   public:
     RecordEnumType(std::string name) : Record(RecordType::RecordEnumType, name) {};
+};
+
+class RecordBuiltinType : public Record {
+  public:
+    llvm::Type* type;
+    RecordBuiltinType(std::string name) : Record(RecordType::BuiltinType, name) {};
+    RecordBuiltinType(std::string name, llvm::Type* type) : Record(RecordType::BuiltinType, name), type(type) {};
 };
 
 class RecordVariable : public Record {
@@ -58,6 +65,8 @@ class Enviornment {
     void add(std::shared_ptr<Record> record);
     std::shared_ptr<Record> get(std::string name);
     bool contains(std::string name);
+    bool is_builtin_type(std::string name);
+    llvm::Type* get_builtin_type(std::string name);
     bool is_variable(std::string name);
     std::shared_ptr<RecordVariable> get_variable(std::string name);
     bool is_function(std::string name);
