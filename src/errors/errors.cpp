@@ -134,7 +134,7 @@ void errors::SyntaxError::raise(bool terminate) {
         std::cerr << "\033[0;32m" << c_line << " | \033[0m" << line << "\n";
         std::string underline;
         if(is_first_line) {
-            underline = std::string(token.col_no - 1, ' ') + std::string(token.end_col_no - token.col_no, '^');
+            underline = std::string(token.col_no, ' ') + std::string(token.end_col_no - token.col_no, '^');
         } else {
             underline = std::string(line.length(), '^');
         }

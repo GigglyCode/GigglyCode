@@ -17,8 +17,10 @@ void compiler::Compiler::_initializeBuiltins() {
     // Create the global variable 'false'
     llvm::GlobalVariable* globalFalse = new llvm::GlobalVariable(*this->llvm_module, this->type_map["bool"], true, llvm::GlobalValue::ExternalLinkage,
                                                                  llvm::ConstantInt::get(this->type_map["bool"], 0), "False");
-    this->enviornment.add("True", this->type_map["bool"], globalTrue, nullptr);
-    this->enviornment.add("False", this->type_map["bool"], globalFalse, nullptr);
+    auto recordTrue = std::make_shared<enviornment::RecordVariable>("True", globalTrue, this->type_map["bool"], nullptr);
+    this->enviornment.add(recordTrue);
+    auto recordFalse = std::make_shared<enviornment::RecordVariable>("False", globalFalse, this->type_map["bool"], nullptr);
+    this->enviornment.add(recordFalse);
 };
 
 void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
@@ -191,11 +193,12 @@ void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST:
                                        std::dynamic_pointer_cast<AST::GenericType>(variable_declaration_statement->value_type)->name)
                                        ->value];
     auto [value, type] = this->_resolveValue(var_value);
-    if(this->enviornment.get(var_name->value) == std::make_tuple(nullptr, nullptr, nullptr)) {
+    if(!this->enviornment.contains(var_name->value)) {
         llvm::AllocaInst* alloca =
             this->llvm_ir_builder.CreateAlloca(var_type, nullptr, std::dynamic_pointer_cast<AST::IdentifierLiteral>(var_name)->value);
         this->llvm_ir_builder.CreateStore(value, alloca);
-        this->enviornment.add(var_name->value, var_type, value, alloca);
+        auto record = std::make_shared<enviornment::RecordVariable>(var_name->value, value, var_type, alloca);
+        this->enviornment.add(record);
     } else {
         std::cout << "Variable already declared" << std::endl;
     }
@@ -205,9 +208,9 @@ void compiler::Compiler::_visitVariableAssignmentStatement(std::shared_ptr<AST::
     auto var_name = std::static_pointer_cast<AST::IdentifierLiteral>(variable_assignment_statement->name);
     auto var_value = variable_assignment_statement->value;
     auto [value, type] = this->_resolveValue(var_value);
-    if(this->enviornment.get(var_name->value) != std::make_tuple(nullptr, nullptr, nullptr)) {
-        auto [_, __, alloca] = this->enviornment.get(var_name->value);
-        this->llvm_ir_builder.CreateStore(value, alloca);
+    if(this->enviornment.is_variable(var_name->value)) {
+        auto var = this->enviornment.get_variable(var_name->value);
+        this->llvm_ir_builder.CreateStore(value, var->allocainst);
     } else {
         std::cout << "Variable not declared" << std::endl;
     }
@@ -276,17 +279,21 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
     this->llvm_ir_builder.SetInsertPoint(bb);
     auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
     this->enviornment = enviornment::Enviornment(prev_env, {}, name);
-    this->enviornment.add(name, func->getFunctionType(), func, nullptr);
-    // adding the alloca for the parameters
+    std::vector<std::tuple<std::string, std::shared_ptr<enviornment::RecordVariable>>> arguments;
     for(auto& arg : func->args()) {
         auto alloca = this->llvm_ir_builder.CreateAlloca(arg.getType(), nullptr, arg.getName());
         this->llvm_ir_builder.CreateStore(&arg, alloca);
-        this->enviornment.add(std::string(arg.getName()), arg.getType(), &arg, alloca);
+        auto record = std::make_shared<enviornment::RecordVariable>(std::string(arg.getName()), &arg, arg.getType(), alloca);
+        arguments.push_back(std::make_tuple(std::string(arg.getName()), record));
+        this->enviornment.add(record);
     }
+    auto func_record = std::make_shared<enviornment::RecordFunction>(name, func, func_type, arguments);
+    this->enviornment.add(func_record);
+    // adding the alloca for the parameters
     this->current_function = func;
     this->compile(body);
     this->enviornment = *prev_env;
-    this->enviornment.add(name, func->getFunctionType(), func, nullptr);
+    this->enviornment.add(func_record);
 }
 
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(std::shared_ptr<AST::CallExpression> call_expression) {
@@ -297,10 +304,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(s
         auto [value, type] = this->_resolveValue(arg);
         args.push_back(value);
     }
-    if(this->enviornment.get(name) != std::make_tuple(nullptr, nullptr, nullptr)) {
-        auto [func, func_type, _] = this->enviornment.get(name);
-        auto returnValue = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func), args, "calltmp");
-        return {returnValue, func_type};
+    if(this->enviornment.is_function(name)) {
+        auto func_record = this->enviornment.get_function(name);
+        auto returnValue = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func_record->function), args, "calltmp");
+        return {returnValue, func_record->function_type};
     }
     std::cout << "Function not declared" << std::endl;
     return {nullptr, nullptr};
@@ -331,9 +338,13 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
     }
     case AST::NodeType::IdentifierLiteral: {
         auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);
-        auto [value, type, alloca] = this->enviornment.get(identifier_literal->value);
-        auto x = std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(type, alloca, identifier_literal->value), type};
-        return x;
+        if(!this->enviornment.is_variable(identifier_literal->value)) {
+            std::cout << "Variable not declared" << std::endl;
+            return {nullptr, nullptr};
+        }
+        auto var = this->enviornment.get_variable(identifier_literal->value);
+        return std::tuple<llvm::Value*, llvm::Type*>{this->llvm_ir_builder.CreateLoad(var->type, var->allocainst, identifier_literal->value),
+                                                     var->type};
     }
     case AST::NodeType::CallExpression: {
         auto call_expression = std::static_pointer_cast<AST::CallExpression>(node);

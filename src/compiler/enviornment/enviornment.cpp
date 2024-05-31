@@ -1,14 +1,103 @@
 #include "enviornment.hpp"
 
-void enviornment::Enviornment::add(std::string name, llvm::Type* type, llvm::Value* value, llvm::AllocaInst* alloca) {
-    records[name] = std::make_tuple(value, type, alloca);
-}
-std::tuple<llvm::Value*, llvm::Type*, llvm::AllocaInst*> enviornment::Enviornment::get(std::string name) {
-    if(records.find(name) != records.end()) {
-        return records[name];
+void enviornment::Enviornment::add(std::shared_ptr<Record> record) { record_map[record->name] = record; }
+
+std::shared_ptr<enviornment::Record> enviornment::Enviornment::get(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name];
     } else if(parent != nullptr) {
         return parent->get(name);
     } else {
-        return std::make_tuple(nullptr, nullptr, nullptr);
+        return nullptr;
     }
 }
+
+bool enviornment::Enviornment::contains(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return true;
+    } else if(parent != nullptr) {
+        return parent->contains(name);
+    } else {
+        return false;
+    }
+};
+bool enviornment::Enviornment::is_variable(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name]->type == RecordType::RecordVariable;
+    } else if(parent != nullptr) {
+        return parent->is_variable(name);
+    } else {
+        return false;
+    }
+};
+bool enviornment::Enviornment::is_function(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name]->type == RecordType::RecordFunction;
+    } else if(parent != nullptr) {
+        return parent->is_function(name);
+    } else {
+        return false;
+    }
+};
+bool enviornment::Enviornment::is_class(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name]->type == RecordType::RecordClassType;
+    } else if(parent != nullptr) {
+        return parent->is_class(name);
+    } else {
+        return false;
+    }
+};
+bool enviornment::Enviornment::is_enum(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        return record_map[name]->type == RecordType::RecordEnumType;
+    } else if(parent != nullptr) {
+        return parent->is_enum(name);
+    } else {
+        return false;
+    }
+};
+
+std::shared_ptr<enviornment::RecordVariable> enviornment::Enviornment::get_variable(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        if(record_map[name]->type == RecordType::RecordVariable) {
+            return std::static_pointer_cast<enviornment::RecordVariable>(record_map[name]);
+        }
+    } else if(parent != nullptr) {
+        return parent->get_variable(name);
+    }
+    return nullptr;
+};
+
+std::shared_ptr<enviornment::RecordFunction> enviornment::Enviornment::get_function(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        if(record_map[name]->type == RecordType::RecordFunction) {
+            return std::static_pointer_cast<enviornment::RecordFunction>(record_map[name]);
+        }
+    } else if(parent != nullptr) {
+        return parent->get_function(name);
+    }
+    return nullptr;
+};
+
+std::shared_ptr<enviornment::RecordClassType> enviornment::Enviornment::get_class(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        if(record_map[name]->type == RecordType::RecordClassType) {
+            return std::static_pointer_cast<enviornment::RecordClassType>(record_map[name]);
+        }
+    } else if(parent != nullptr) {
+        return parent->get_class(name);
+    }
+    return nullptr;
+};
+
+std::shared_ptr<enviornment::RecordEnumType> enviornment::Enviornment::get_enum(std::string name) {
+    if(record_map.find(name) != record_map.end()) {
+        if(record_map[name]->type == RecordType::RecordEnumType) {
+            return std::static_pointer_cast<enviornment::RecordEnumType>(record_map[name]);
+        }
+    } else if(parent != nullptr) {
+        return parent->get_enum(name);
+    }
+    return nullptr;
+};
