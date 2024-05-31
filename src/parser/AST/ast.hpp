@@ -2,6 +2,9 @@
 #define AST_HPP
 #include "../../include/json.hpp"
 #include "../../lexer/tokens.hpp"
+#include <tuple>
+#include <unordered_map>
+
 
 namespace AST {
 enum class NodeType {
@@ -36,8 +39,24 @@ enum class NodeType {
 
 std::shared_ptr<std::string> nodeTypeToString(NodeType type);
 
+struct MetaData {
+    int st_line_no = -1;
+    int st_col_no = -1;
+    int end_line_no = -1;
+    int end_col_no = -1;
+    NodeType type = NodeType::Unknown;
+    std::unordered_map<std::string, std::tuple<int, int>> more_data = {};
+};
+
 class Node {
   public:
+    MetaData meta_data;
+    virtual inline void set_meta_data(int st_line_no, int st_col_no, int end_line_no, int end_col_no) {
+        meta_data.st_line_no = st_line_no;
+        meta_data.st_col_no = st_col_no;
+        meta_data.end_line_no = meta_data.end_line_no;
+        meta_data.end_col_no = meta_data.end_col_no;
+    };
     virtual inline NodeType type() { return NodeType::Unknown; };
     virtual inline std::shared_ptr<nlohmann::json> toJSON() {
         auto json = nlohmann::json();
@@ -186,7 +205,7 @@ class FloatLiteral : public Expression {
 class StringLiteral : public Expression {
   public:
     std::string value;
-    inline StringLiteral(std::string value) : value(value) {}
+    inline StringLiteral(std::string value) : value(value) { this->meta_data.more_data["length"] = {value.length(), value.length()}; }
     inline NodeType type() override { return NodeType::StringLiteral; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
