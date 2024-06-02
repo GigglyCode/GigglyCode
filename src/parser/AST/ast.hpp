@@ -4,6 +4,7 @@
 #include "../../lexer/tokens.hpp"
 #include <tuple>
 #include <unordered_map>
+#include <variant>
 
 
 namespace AST {
@@ -45,17 +46,17 @@ struct MetaData {
     int end_line_no = -1;
     int end_col_no = -1;
     NodeType type = NodeType::Unknown;
-    std::unordered_map<std::string, std::tuple<int, int>> more_data = {};
+    std::unordered_map<std::string, std::variant<int, std::string, std::tuple<int, int>>> more_data = {};
 };
 
 class Node {
   public:
     MetaData meta_data;
-    virtual inline void set_meta_data(int st_line_no, int st_col_no, int end_line_no, int end_col_no) {
-        meta_data.st_line_no = st_line_no;
-        meta_data.st_col_no = st_col_no;
-        meta_data.end_line_no = meta_data.end_line_no;
-        meta_data.end_col_no = meta_data.end_col_no;
+    inline void set_meta_data(int st_line_num, int st_col_num, int end_line_num, int end_col_num) {
+        meta_data.st_line_no = st_line_num;
+        meta_data.st_col_no = st_col_num;
+        meta_data.end_line_no = end_line_num;
+        meta_data.end_col_no = end_col_num;
     };
     virtual inline NodeType type() { return NodeType::Unknown; };
     virtual inline std::shared_ptr<nlohmann::json> toJSON() {
@@ -180,8 +181,11 @@ class InfixExpression : public Expression {
     std::shared_ptr<Expression> left;
     std::shared_ptr<Expression> right;
     token::TokenType op;
-    inline InfixExpression(std::shared_ptr<Expression> left, token::TokenType op, std::shared_ptr<Expression> right = nullptr)
-        : left(left), right(right), op(op) {}
+    inline InfixExpression(std::shared_ptr<Expression> left, token::TokenType op, const std::string& literal,
+                           std::shared_ptr<Expression> right = nullptr)
+        : left(left), right(right), op(op) {
+        this->meta_data.more_data["operator_literal"] = literal;
+    }
     inline NodeType type() override { return NodeType::InfixedExpression; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
@@ -205,7 +209,7 @@ class FloatLiteral : public Expression {
 class StringLiteral : public Expression {
   public:
     std::string value;
-    inline StringLiteral(std::string value) : value(value) { this->meta_data.more_data["length"] = {value.length(), value.length()}; }
+    inline StringLiteral(std::string value) : value(value) { this->meta_data.more_data["length"] = int(value.length()); }
     inline NodeType type() override { return NodeType::StringLiteral; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };

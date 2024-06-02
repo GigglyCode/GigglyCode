@@ -29,7 +29,6 @@ std::shared_ptr<std::string> Lexer::_isString() {
 std::shared_ptr<std::string> Lexer::_readString(const std::string& quote) {
     std::string str = "";
     std::string literal = quote;
-    int st_col_no = this->col_no;
     if(quote == "\"\"\"" || quote == "'''") {
         this->_readChar();
         this->_readChar();

@@ -1,3 +1,4 @@
+#include "../../parser/AST/ast.hpp"
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
@@ -9,10 +10,18 @@
 
 namespace enviornment {
 enum class RecordType { RecordClassType, RecordEnumType, BuiltinType, RecordVariable, RecordFunction };
+
 class Record {
   public:
     RecordType type;
     std::string name;
+    AST::MetaData meta_data;
+    virtual inline void set_meta_data(int st_line_no, int st_col_no, int end_line_no, int end_col_no) {
+        this->meta_data.st_line_no = st_line_no;
+        this->meta_data.st_col_no = st_col_no;
+        this->meta_data.end_line_no = end_line_no;
+        this->meta_data.end_col_no = end_col_no;
+    };
     Record(RecordType type, std::string name) : type(type), name(name) {};
 }; // class Record
 
@@ -63,17 +72,17 @@ class Enviornment {
                 std::string name = "unnamed")
         : parent(parent), name(name), record_map(records) {};
     void add(std::shared_ptr<Record> record);
-    std::shared_ptr<Record> get(std::string name);
-    bool contains(std::string name);
-    bool is_builtin_type(std::string name);
-    llvm::Type* get_builtin_type(std::string name);
-    bool is_variable(std::string name);
-    std::shared_ptr<RecordVariable> get_variable(std::string name);
-    bool is_function(std::string name);
-    std::shared_ptr<RecordFunction> get_function(std::string name);
-    bool is_class(std::string name);
-    std::shared_ptr<RecordClassType> get_class(std::string name);
-    bool is_enum(std::string name);
-    std::shared_ptr<RecordEnumType> get_enum(std::string name);
+    std::shared_ptr<Record> get(std::string name, bool limit2current_scope = false);
+    bool contains(std::string name, bool limit2current_scope = false);
+    bool is_builtin_type(std::string name, bool limit2current_scope = false);
+    llvm::Type* get_builtin_type(std::string name, bool limit2current_scope = false);
+    bool is_variable(std::string name, bool limit2current_scope = false);
+    std::shared_ptr<RecordVariable> get_variable(std::string name, bool limit2current_scope = false);
+    bool is_function(std::string name, bool limit2current_scope = false);
+    std::shared_ptr<RecordFunction> get_function(std::string name, bool limit2current_scope = false);
+    bool is_class(std::string name, bool limit2current_scope = false);
+    std::shared_ptr<RecordClassType> get_class(std::string name, bool limit2current_scope = false);
+    bool is_enum(std::string name, bool limit2current_scope = false);
+    std::shared_ptr<RecordEnumType> get_enum(std::string name, bool limit2current_scope = false);
 }; // class Environment
 } // namespace enviornment

@@ -1,3 +1,4 @@
+#include "../errors/errors.hpp"
 #include "../lexer/tokens.hpp"
 #include "../parser/AST/ast.hpp"
 #include "enviornment/enviornment.hpp"
@@ -19,9 +20,11 @@ class Compiler {
     std::unique_ptr<llvm::Module> llvm_module;
     llvm::IRBuilder<> llvm_ir_builder; // Move the declaration here
     std::unordered_map<std::string, llvm::Type*> type_map;
+    const std::string source;
     enviornment::Enviornment enviornment;
     llvm::Function* current_function;
     Compiler();
+    Compiler(const std::string& source);
 
     void compile(std::shared_ptr<AST::Node> node);
 

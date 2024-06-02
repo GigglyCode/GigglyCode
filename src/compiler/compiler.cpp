@@ -5,6 +5,11 @@ compiler::Compiler::Compiler() : llvm_context(llvm::LLVMContext()), llvm_ir_buil
     this->_initializeBuiltins();
 }
 
+compiler::Compiler::Compiler(const std::string& source) : llvm_context(llvm::LLVMContext()), llvm_ir_builder(llvm_context), source(source) {
+    this->llvm_module = std::make_unique<llvm::Module>("main", llvm_context);
+    this->_initializeBuiltins();
+}
+
 void compiler::Compiler::_initializeBuiltins() {
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("int", llvm::Type::getInt32Ty(llvm_context)));
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("float", llvm::Type::getFloatTy(llvm_context)));
@@ -72,7 +77,9 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         break;
     }
     default:
-        std::cout << "Unknown node type" << std::endl;
+        errors::InternalCompilationError("Unknown node type", this->source, node->meta_data.st_line_no, node->meta_data.end_line_no,
+                                         "Unknown node type: " + *AST::nodeTypeToString(node->type()))
+            .raise();
         break;
     }
 };
@@ -127,7 +134,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
             result_value = this->llvm_ir_builder.CreateICmpNE(left_value, right_value, "netmp");
             result_type = this->enviornment.get_builtin_type("bool");
         } else {
-            std::cout << "Unknown operator" << std::endl;
+            errors::UnsupportedOperationError(this->source, infixed_expression->meta_data,
+                                              "`int` Dose Not Support Operator: `" +
+                                                  std::get<std::string>(infixed_expression->meta_data.more_data["operator_literal"]) + "`")
+                .raise();
         }
     } else if(left_type == this->enviornment.get_builtin_type("float") && right_type == this->enviornment.get_builtin_type("float")) {
         if(op == token::TokenType::Plus) {
@@ -161,7 +171,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
             result_value = this->llvm_ir_builder.CreateFCmpONE(left_value, right_value, "netmp");
             result_type = this->enviornment.get_builtin_type("bool");
         } else {
-            std::cout << "Unknown operator" << std::endl;
+            errors::UnsupportedOperationError(this->source, infixed_expression->meta_data,
+                                              "`float` Dose Not Support Operator: `" +
+                                                  std::get<std::string>(infixed_expression->meta_data.more_data["operator_literal"]) + "`")
+                .raise();
         }
     }
     //  else if(left_type == this->enviornment.get_builtin_type("bool") && right_type == this->enviornment.get_builtin_type("bool")) {
@@ -188,14 +201,22 @@ void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST:
                                                std::dynamic_pointer_cast<AST::GenericType>(variable_declaration_statement->value_type)->name)
                                                ->value);
     auto [value, type] = this->_resolveValue(var_value);
-    if(!this->enviornment.contains(var_name->value)) {
+    if(!this->enviornment.contains(var_name->value, true)) {
         llvm::AllocaInst* alloca =
             this->llvm_ir_builder.CreateAlloca(var_type, nullptr, std::dynamic_pointer_cast<AST::IdentifierLiteral>(var_name)->value);
         this->llvm_ir_builder.CreateStore(value, alloca);
         auto record = std::make_shared<enviornment::RecordVariable>(var_name->value, value, var_type, alloca);
+        record->set_meta_data(variable_declaration_statement->meta_data.st_line_no, variable_declaration_statement->meta_data.st_col_no,
+                              variable_declaration_statement->meta_data.end_line_no, variable_declaration_statement->meta_data.end_col_no);
+        record->meta_data.more_data["name_line_no"] = var_name->meta_data.st_line_no;
+        record->meta_data.more_data["name_st_col_no"] = var_name->meta_data.st_col_no;
+        record->meta_data.more_data["name_end_col_no"] = var_name->meta_data.end_col_no;
         this->enviornment.add(record);
+    } else if(this->enviornment.is_variable(var_name->value)) {
+        errors::VariableRedeclarationError(this->source, this->enviornment.get_variable(var_name->value)->meta_data, *variable_declaration_statement)
+            .raise();
     } else {
-        std::cout << "Variable already declared" << std::endl;
+        std::cout << "Variable not declared" << std::endl;
     }
 };
 

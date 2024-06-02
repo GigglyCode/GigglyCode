@@ -181,6 +181,7 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseVariableDeclaration() {
     int st_line_no = current_token->line_no;
     int st_col_no = current_token->col_no;
     auto identifier = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
+    identifier->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
     this->_nextToken();
     this->_nextToken();
     auto type = this->_parseType();
@@ -190,6 +191,9 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseVariableDeclaration() {
         int end_col_no = current_token->col_no;
         auto variableDeclarationStatement = std::make_shared<AST::VariableDeclarationStatement>(identifier, type);
         variableDeclarationStatement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+        variableDeclarationStatement->meta_data.more_data["name_line_no"] = st_line_no;
+        variableDeclarationStatement->meta_data.more_data["name_col_no"] = st_col_no;
+        variableDeclarationStatement->meta_data.more_data["name_end_col_no"] = current_token->end_col_no;
         return variableDeclarationStatement;
     } else if(this->_expectPeek(token::TokenType::Equals)) {
         this->_nextToken();
@@ -199,6 +203,9 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseVariableDeclaration() {
         int end_col_no = current_token->col_no;
         auto variableDeclarationStatement = std::make_shared<AST::VariableDeclarationStatement>(identifier, type, expr);
         variableDeclarationStatement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+        variableDeclarationStatement->meta_data.more_data["name_line_no"] = st_line_no;
+        variableDeclarationStatement->meta_data.more_data["name_col_no"] = st_col_no;
+        variableDeclarationStatement->meta_data.more_data["name_end_col_no"] = current_token->end_col_no;
         return variableDeclarationStatement;
     }
     return nullptr;
@@ -309,14 +316,17 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseIfElseStatement() {
 std::shared_ptr<AST::Expression> parser::Parser::_parseInfixExpression(std::shared_ptr<AST::Expression> leftNode) {
     int st_line_no = leftNode->meta_data.st_line_no;
     int st_col_no = leftNode->meta_data.st_col_no;
-    auto infixExpr = std::make_shared<AST::InfixExpression>(leftNode, this->current_token->type);
+    auto infix_expr = std::make_shared<AST::InfixExpression>(leftNode, this->current_token->type, this->current_token->literal);
+    infix_expr->meta_data.more_data["operator_line_no"] = this->current_token->line_no;
+    infix_expr->meta_data.more_data["operator_st_col_no"] = this->current_token->col_no;
+    infix_expr->meta_data.more_data["operator_end_col_no"] = this->current_token->end_col_no;
     auto precedence = this->_currentPrecedence();
     this->_nextToken();
-    infixExpr->right = this->_parseExpression(precedence);
-    int end_line_no = infixExpr->right->meta_data.end_line_no;
-    int end_col_no = infixExpr->right->meta_data.end_col_no;
-    infixExpr->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
-    return infixExpr;
+    infix_expr->right = this->_parseExpression(precedence);
+    int end_line_no = infix_expr->right->meta_data.end_line_no;
+    int end_col_no = infix_expr->right->meta_data.end_col_no;
+    infix_expr->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+    return infix_expr;
 }
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseGroupedExpression() {
@@ -336,7 +346,10 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseGroupedExpression() {
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseIntegerLiteral() {
     auto expr = std::make_shared<AST::IntegerLiteral>(std::stoll(current_token->literal));
-    expr->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
+    expr->meta_data.st_line_no = current_token->line_no;
+    expr->meta_data.st_col_no = current_token->col_no;
+    expr->meta_data.end_line_no = current_token->line_no;
+    expr->meta_data.end_col_no = current_token->end_col_no;
     return expr;
 }
 
@@ -363,7 +376,11 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseIdentifier() {
         return this->_parseFunctionCall();
     }
     auto expr = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
-    expr->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->col_no);
+    expr->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
+    std::cout << "Identifier: " << current_token->literal << std::endl;
+    std::cout << "Line: " << current_token->line_no << std::endl;
+    std::cout << "Col: " << current_token->col_no << std::endl;
+    std::cout << "End Col: " << current_token->end_col_no << std::endl;
     return expr;
 }
 

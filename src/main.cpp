@@ -10,7 +10,7 @@
 
 #define DEBUG_LEXER false
 #define DEBUG_PARSER false
-#define DEBUG_COMPILER true
+#define DEBUG_COMPILER false
 #define DEBUG_LEXER_OUTPUT_PATH "./dump/lexer_output"
 #define DEBUG_PARSER_OUTPUT_PATH "./dump/parser_output.json"
 #define DEBUG_COMPILER_OUTPUT_PATH "./dump/compiler_output.ll"
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    compiler::Compiler c;
+    compiler::Compiler c(file_content);
     if(DEBUG_COMPILER) {
         std::cout << "=========== Compiler Debug ===========" << std::endl;
         c.compile(program);
