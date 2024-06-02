@@ -176,20 +176,40 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitInfixExpression(
                                                   std::get<std::string>(infixed_expression->meta_data.more_data["operator_literal"]) + "`")
                 .raise();
         }
+    } else if(left_type == this->enviornment.get_builtin_type("bool") && right_type == this->enviornment.get_builtin_type("bool")) {
+        if(op == token::TokenType::And) {
+            result_value = this->llvm_ir_builder.CreateAnd(left_value, right_value, "andtmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::Or) {
+            result_value = this->llvm_ir_builder.CreateOr(left_value, right_value, "ortmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::EqualEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpEQ(left_value, right_value, "eqtmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::NotEquals) {
+            result_value = this->llvm_ir_builder.CreateICmpNE(left_value, right_value, "netmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::GreaterThan) {
+            result_value = this->llvm_ir_builder.CreateICmpSGT(left_value, right_value, "gttmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::LessThan) {
+            result_value = this->llvm_ir_builder.CreateICmpSLT(left_value, right_value, "lttmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::GreaterThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpSGE(left_value, right_value, "getmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else if(op == token::TokenType::LessThanOrEqual) {
+            result_value = this->llvm_ir_builder.CreateICmpSLE(left_value, right_value, "letmp");
+            result_type = this->enviornment.get_builtin_type("bool");
+        } else {
+            errors::UnsupportedOperationError(this->source, infixed_expression->meta_data,
+                                              "`bool` Dose Not Support Operator: `" +
+                                                  std::get<std::string>(infixed_expression->meta_data.more_data["operator_literal"]) + "`")
+                .raise();
+        }
+    } else {
+        std::cout << "Unknown Type" << std::endl;
     }
-    //  else if(left_type == this->enviornment.get_builtin_type("bool") && right_type == this->enviornment.get_builtin_type("bool")) {
-    //     if(op == token::TokenType::And) {
-    //         result_value = this->llvm_ir_builder.CreateAnd(left_value, right_value, "andtmp");
-    //         result_type = this->enviornment.get_builtin_type("bool");
-    //     } else if(op == token::TokenType::Or) {
-    //         result_value = this->llvm_ir_builder.CreateOr(left_value, right_value, "ortmp");
-    //         result_type = this->enviornment.get_builtin_type("bool");
-    //     } else {
-    //         std::cout << "Unknown operator" << std::endl;
-    //     }
-    // } else {
-    //     std::cout << "Unknown operator" << std::endl;
-    // }
     return {result_value, result_type};
 };
 

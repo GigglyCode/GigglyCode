@@ -1,8 +1,10 @@
-def add(a: int, b: int) -> int {
-    return a + b;
-}
-
 def main() -> int {
-    f: int = add(1, 2);
-    return f;
+    f: bool = True;
+    x: bool = False;
+    if (f or x) {
+        return 1;
+    } else {
+        return 0;
+    }
+    return 0;
 }
