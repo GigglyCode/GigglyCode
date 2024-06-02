@@ -134,7 +134,7 @@ void errors::SyntaxError::raise(bool terminate) {
         std::cerr << "\033[0;32m" << c_line << " | \033[0m" << line << "\n";
         std::string underline;
         if(is_first_line) {
-            underline = std::string(token.col_no, ' ') + std::string(token.end_col_no - token.col_no, '^');
+            underline = std::string(token.col_no, ' ') + std::string(token.end_col_no - token.col_no + 1, '^');
         } else {
             underline = std::string(line.length(), '^');
         }
@@ -206,7 +206,7 @@ void errors::VariableRedeclarationError::raise(bool terminate) {
                   << " | \033[0m" << re_var_dec_line_iterator.next() << "\n";
         std::string underline = std::string(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_col_no, ' ') +
                                 std::string(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.end_col_no -
-                                                std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_col_no,
+                                                std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_col_no + 1,
                                             '^');
         std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
     }
@@ -260,7 +260,7 @@ void errors::UndefinedVariableError::raise(bool terminate) {
     while(lineIterator.has_next()) {
         // Print line number in bold blue and source content in white
         std::cerr << "\033[0;32m" << c_line << " | \033[0m" << lineIterator.next() << "\n";
-        auto underline = std::string(this->meta_data.st_col_no, ' ') + std::string(this->meta_data.end_col_no - this->meta_data.st_col_no, '^');
+        auto underline = std::string(this->meta_data.st_col_no, ' ') + std::string(this->meta_data.end_col_no - this->meta_data.st_col_no + 1, '^');
         std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
         c_line++;
     }
@@ -299,8 +299,8 @@ void errors::UnsupportedOperationError::raise(bool terminate) {
             auto line = lineIterator.next();
             std::cerr << "\033[0;32m" << c_line << " | \033[0m" << line << "\n";
             std::string underline = std::string(std::get<int>(this->meta_data.more_data["operator_st_col_no"]), ' ') +
-                                    std::string(std::get<int>(this->meta_data.more_data["operator_end_col_no"]) -
-                                                    std::get<int>(this->meta_data.more_data["operator_st_col_no"]),
+                                    std::string((std::get<int>(this->meta_data.more_data["operator_end_col_no"]) -
+                                                 std::get<int>(this->meta_data.more_data["operator_st_col_no"]) + 1),
                                                 '^');
             std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
         }
@@ -308,6 +308,37 @@ void errors::UnsupportedOperationError::raise(bool terminate) {
     }
     if(this->end_line < getNumberOfLines(source)) {
         std::cerr << "\033[0;32m" << this->end_line + 1 << " | \033[0m" << lineIterator.get_after_end_line() << "\n";
+    }
+    if(!suggestedFix.empty()) {
+        std::cerr << "\033[1;33m"
+                  << "Suggested fix: " << suggestedFix << "\033[0m\n\n";
+    }
+    if(terminate)
+        exit(EXIT_FAILURE);
+}
+
+void errors::UndefinedFunctionError::raise(bool terminate) {
+    const std::string banner = std::string(30, '=') + " Undefined Function Error " + std::string(30, '=');
+    std::cerr << "\n\n\033[1;35m" << banner << "\033[0m\n\n";
+    // Print error message in red color
+    std::cerr << "\033[1;31m"
+              << "UndefinedFunctionError: \033[0m"
+              << "\033[0;97m" << message << "\033[0m\n";
+    std::cerr << "\033[1;36mSource Context:\033[0m\n";
+    LineIterator lineIterator(source, this->meta_data.st_line_no, this->meta_data.end_line_no);
+    int c_line = this->meta_data.st_line_no;
+    if(this->meta_data.st_line_no > 1) {
+        std::cerr << "\033[0;32m" << this->meta_data.st_line_no - 1 << " | \033[0m" << lineIterator.get_before_start_line();
+    }
+    while(lineIterator.has_next()) {
+        // Print line number in bold blue and source content in white
+        std::cerr << "\033[0;32m" << c_line << " | \033[0m" << lineIterator.next() << "\n";
+        auto underline = std::string(this->meta_data.st_col_no, ' ') + std::string(this->meta_data.end_col_no - this->meta_data.st_col_no, '^');
+        std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
+        c_line++;
+    }
+    if(this->meta_data.end_line_no < getNumberOfLines(source)) {
+        std::cerr << "\033[0;32m" << this->meta_data.end_line_no + 1 << " | \033[0m" << lineIterator.get_after_end_line() << "\n";
     }
     if(!suggestedFix.empty()) {
         std::cerr << "\033[1;33m"

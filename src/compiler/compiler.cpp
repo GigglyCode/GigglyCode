@@ -306,6 +306,11 @@ void compiler::Compiler::_visitFunctionDeclarationStatement(std::shared_ptr<AST:
         this->enviornment.add(record);
     }
     auto func_record = std::make_shared<enviornment::RecordFunction>(name, func, func_type, arguments);
+    func_record->set_meta_data(function_declaration_statement->meta_data.st_line_no, function_declaration_statement->meta_data.st_col_no,
+                               function_declaration_statement->meta_data.end_line_no, function_declaration_statement->meta_data.end_col_no);
+    func_record->meta_data.more_data["name_line_no"] = function_declaration_statement->name->meta_data.st_line_no;
+    func_record->meta_data.more_data["name_st_col_no"] = function_declaration_statement->name->meta_data.st_col_no;
+    func_record->meta_data.more_data["name_end_col_no"] = function_declaration_statement->name->meta_data.end_col_no;
     this->enviornment.add(func_record);
     // adding the alloca for the parameters
     this->current_function = func;
@@ -327,7 +332,9 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(s
         auto returnValue = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func_record->function), args, "calltmp");
         return {returnValue, func_record->function_type};
     }
-    std::cout << "Function not declared" << std::endl;
+    errors::UndefinedFunctionError(this->source, call_expression->meta_data, "Function `" + name + "` not defined", "Define the function first")
+        .raise();
+    std::exit(1);
     return {nullptr, nullptr};
 };
 
@@ -357,7 +364,9 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
     case AST::NodeType::IdentifierLiteral: {
         auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);
         if(!this->enviornment.is_variable(identifier_literal->value)) {
-            std::cout << "Variable not declared" << std::endl;
+            errors::UndefinedVariableError(this->source, identifier_literal->meta_data, "Variable `" + identifier_literal->value + "` not defined",
+                                           "Define the variable first")
+                .raise();
             return {nullptr, nullptr};
         }
         auto var = this->enviornment.get_variable(identifier_literal->value);
@@ -377,7 +386,9 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         return this->_visitInfixExpression(infix_expression);
     }
     default:
-        std::cout << "Unknown node type" << std::endl;
+        errors::InternalCompilationError("Unknown node type", this->source, node->meta_data.st_line_no, node->meta_data.end_line_no,
+                                         "Unknown node type: " + *AST::nodeTypeToString(node->type()))
+            .raise();
         return {nullptr, nullptr};
     }
 }

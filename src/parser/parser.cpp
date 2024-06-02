@@ -53,6 +53,7 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
         return nullptr;
     }
     auto name = std::make_shared<AST::IdentifierLiteral>(this->current_token->literal);
+    name->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
     if(!this->_expectPeek(token::TokenType::LeftParen)) {
         return nullptr;
     }
@@ -60,7 +61,7 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
     std::vector<std::shared_ptr<AST::FunctionParameter>> parameters;
     while(this->current_token->type != token::TokenType::RightParen) {
         if(this->current_token->type == token::TokenType::Identifier) {
-            auto identifier = std::make_shared<AST::IdentifierLiteral>(this->current_token->literal);
+            auto identifier = _parseIdentifier();
             if(!this->_expectPeek(token::TokenType::Colon)) {
                 return nullptr;
             }
@@ -102,6 +103,7 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall() {
     int st_line_no = current_token->line_no;
     int st_col_no = current_token->col_no;
     auto identifier = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
+    identifier->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
     this->_nextToken();
     auto args = this->_parse_expression_list(token::TokenType::RightParen);
     int end_line_no = current_token->line_no;
@@ -223,7 +225,7 @@ std::shared_ptr<AST::BaseType> parser::Parser::_parseType() {
     else if(this->_currentTokenIs(token::TokenType::RawString))
         name = std::make_shared<AST::StringLiteral>(this->current_token->literal);
     else
-        name = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
+        name = _parseIdentifier();
     std::vector<std::shared_ptr<AST::BaseType>> generics;
     if(this->_peekTokenIs(token::TokenType::LeftBracket)) {
         this->_nextToken();
