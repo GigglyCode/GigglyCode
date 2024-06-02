@@ -216,7 +216,7 @@ void compiler::Compiler::_visitVariableDeclarationStatement(std::shared_ptr<AST:
         errors::VariableRedeclarationError(this->source, this->enviornment.get_variable(var_name->value)->meta_data, *variable_declaration_statement)
             .raise();
     } else {
-        std::cout << "Variable not declared" << std::endl;
+        errors::VariableRedeclarationError(this->source, this->enviornment.get(var_name->value)->meta_data, *variable_declaration_statement).raise();
     }
 };
 
@@ -228,7 +228,9 @@ void compiler::Compiler::_visitVariableAssignmentStatement(std::shared_ptr<AST::
         auto var = this->enviornment.get_variable(var_name->value);
         this->llvm_ir_builder.CreateStore(value, var->allocainst);
     } else {
-        std::cout << "Variable not declared" << std::endl;
+        errors::UndefinedVariableError(this->source, var_name->meta_data, "Assigning to undefine Variable",
+                                       "Define the variable fist before reassigning")
+            .raise();
     }
 };
 

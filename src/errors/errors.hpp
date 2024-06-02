@@ -45,6 +45,16 @@ class VariableRedeclarationError : public Error {
     void raise(bool terminate = true) override;
 };
 
+class UndefinedVariableError : public Error {
+  public:
+    AST::MetaData meta_data;
+    UndefinedVariableError(const std::string& source, AST::MetaData meta_data, const std::string& message = "", const std::string& suggestedFix = "")
+        : Error(source, meta_data.st_line_no, meta_data.end_line_no, message, suggestedFix) {
+        this->meta_data = meta_data;
+    }
+    void raise(bool terminate = true) override;
+};
+
 class InternalCompilationError : public Error {
   public:
     std::string name;

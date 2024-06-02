@@ -194,25 +194,25 @@ void errors::VariableRedeclarationError::raise(bool terminate) {
     std::cerr << message << "\033[0m\n";
 
     std::cerr << "\033[1;36mRedeclaration found at: \033[0m\n";
-    LineIterator re_var_dec_line_iterator(source, std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]),
-                                          std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]));
-    if(std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]) > 1) {
-        std::cerr << "\033[0;32m" << std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]) - 1 << " | \033[0m"
-                  << re_var_dec_line_iterator.get_before_start_line();
+    LineIterator re_var_dec_line_iterator(source, std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no,
+                                          std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no);
+    if(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no > 1) {
+        std::cerr << "\033[0;32m" << std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no - 1
+                  << " | \033[0m" << re_var_dec_line_iterator.get_before_start_line();
     }
     while(re_var_dec_line_iterator.has_next()) {
         // Print line number in bold blue and source content in white
-        std::cerr << "\033[0;32m" << std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]) << " | \033[0m"
-                  << re_var_dec_line_iterator.next() << "\n";
-        std::string underline = std::string(std::get<int>(this->re_var_dec_node.meta_data.more_data["name_st_col_no"]), ' ') +
-                                std::string(std::get<int>(this->re_var_dec_node.meta_data.more_data["name_end_col_no"]) -
-                                                std::get<int>(this->re_var_dec_node.meta_data.more_data["name_st_col_no"]),
+        std::cerr << "\033[0;32m" << std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no
+                  << " | \033[0m" << re_var_dec_line_iterator.next() << "\n";
+        std::string underline = std::string(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_col_no, ' ') +
+                                std::string(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.end_col_no -
+                                                std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_col_no,
                                             '^');
         std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
     }
-    if(std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]) < getNumberOfLines(source)) {
-        std::cerr << "\033[0;32m" << std::get<int>(this->re_var_dec_node.meta_data.more_data["name_line_no"]) + 1 << " | \033[0m"
-                  << re_var_dec_line_iterator.get_after_end_line() << "\n";
+    if(std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no < getNumberOfLines(source)) {
+        std::cerr << "\033[0;32m" << std::static_pointer_cast<AST::IdentifierLiteral>(this->re_var_dec_node.name)->meta_data.st_line_no + 1
+                  << " | \033[0m" << re_var_dec_line_iterator.get_after_end_line() << "\n";
     }
 
     std::cerr << "\033[1;36mOriginal declaration was at:\033[0m\n";
@@ -244,6 +244,37 @@ void errors::VariableRedeclarationError::raise(bool terminate) {
         exit(EXIT_FAILURE);
 }
 
+void errors::UndefinedVariableError::raise(bool terminate) {
+    const std::string banner = std::string(30, '=') + " Undefined Variable Error " + std::string(30, '=');
+    std::cerr << "\n\n\033[1;35m" << banner << "\033[0m\n\n";
+    // Print error message in red color
+    std::cerr << "\033[1;31m"
+              << "UndefinedVariableError: \033[0m"
+              << "\033[0;97m" << message << "\033[0m\n";
+    std::cerr << "\033[1;36mSource Context:\033[0m\n";
+    LineIterator lineIterator(source, this->meta_data.st_line_no, this->meta_data.end_line_no);
+    int c_line = this->meta_data.st_line_no;
+    if(this->meta_data.st_line_no > 1) {
+        std::cerr << "\033[0;32m" << this->meta_data.st_line_no - 1 << " | \033[0m" << lineIterator.get_before_start_line();
+    }
+    while(lineIterator.has_next()) {
+        // Print line number in bold blue and source content in white
+        std::cerr << "\033[0;32m" << c_line << " | \033[0m" << lineIterator.next() << "\n";
+        auto underline = std::string(this->meta_data.st_col_no, ' ') + std::string(this->meta_data.end_col_no - this->meta_data.st_col_no, '^');
+        std::cerr << "\033[0;32m  | \033[0m\033[1;31m" << underline << "\033[0m\n";
+        c_line++;
+    }
+    if(this->meta_data.end_line_no < getNumberOfLines(source)) {
+        std::cerr << "\033[0;32m" << this->meta_data.end_line_no + 1 << " | \033[0m" << lineIterator.get_after_end_line() << "\n";
+    }
+    if(!suggestedFix.empty()) {
+        std::cerr << "\033[1;33m"
+                  << "Suggested fix: " << suggestedFix << "\033[0m\n\n";
+    }
+    if(terminate)
+        exit(EXIT_FAILURE);
+}
+
 void errors::UnsupportedOperationError::raise(bool terminate) {
     std::string banner = std::string(30, '=') + " Unsupported Operator Error " + std::string(30, '=');
     std::cerr << "\n\n\033[1;35m" << banner << "\033[0m\n\n";
@@ -259,10 +290,6 @@ void errors::UnsupportedOperationError::raise(bool terminate) {
                   << "\033[4;0m" << lineIterator.get_before_start_line() << "\033[0m";
     }
     while(lineIterator.has_next()) {
-        // std::cout << "c_line: " << c_line << std::endl;
-        // std::cout << "operator_line_no" << std::get<int>(this->meta_data.more_data["operator_line_no"]) << std::endl;
-        // std::cout << "operator_st_col_no" << std::get<int>(this->meta_data.more_data["operator_st_col_no"]) << std::endl;
-        // std::cout << "operator_end_col_no" << std::get<int>(this->meta_data.more_data["operator_end_col_no"]) << std::endl;
         // Print line number in bold blue and source content in white
         if(c_line != std::get<int>(this->meta_data.more_data["operator_line_no"])) {
             std::cerr << "\033[0;32m" << c_line << " | \033[0m"

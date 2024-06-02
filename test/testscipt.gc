@@ -1,5 +1,4 @@
 def main() -> int {
-    f: int = 0;
     f: int = 1;
     return f
 }
