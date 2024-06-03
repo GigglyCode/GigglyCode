@@ -14,7 +14,11 @@ void compiler::Compiler::_initializeBuiltins() {
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("int", llvm::Type::getInt32Ty(llvm_context)));
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("float", llvm::Type::getFloatTy(llvm_context)));
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("bool", llvm::Type::getInt1Ty(llvm_context)));
-
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("char", llvm::Type::getInt8Ty(llvm_context)));
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("str", llvm::PointerType::get(llvm::Type::getInt8Ty(llvm_context), 0)));
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("void", llvm::Type::getVoidTy(llvm_context)));
+    this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("None", this->enviornment.get_builtin_type("void")));
+    
     // Create the global variable 'true'
     llvm::GlobalVariable* globalTrue =
         new llvm::GlobalVariable(*this->llvm_module, this->enviornment.get_builtin_type("bool"), true, llvm::GlobalValue::ExternalLinkage,
@@ -380,6 +384,13 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
         auto boolean_literal = std::static_pointer_cast<AST::BooleanLiteral>(node);
         auto value = llvm::ConstantInt::get(llvm_context, llvm::APInt(1, boolean_literal->value, true));
         return {value, this->enviornment.get_builtin_type("bool")};
+    }
+    case AST::NodeType::StringLiteral: {
+        auto string_literal = std::static_pointer_cast<AST::StringLiteral>(node);
+        auto value = this->llvm_ir_builder.CreateGlobalStringPtr(string_literal->value);
+        auto alloca = this->llvm_ir_builder.CreateAlloca(value->getType());
+        this->llvm_ir_builder.CreateStore(value, alloca);
+        return {alloca, this->enviornment.get_builtin_type("str")};
     }
     case AST::NodeType::IdentifierLiteral: {
         auto identifier_literal = std::static_pointer_cast<AST::IdentifierLiteral>(node);
