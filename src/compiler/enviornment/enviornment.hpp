@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <stack>
 
 
 namespace enviornment {
@@ -68,6 +69,9 @@ class Enviornment {
     std::shared_ptr<Enviornment> parent;
     std::string name;
     std::unordered_map<std::string, std::shared_ptr<Record>> record_map;
+    std::stack<llvm::BasicBlock*> loop_body_block = {};
+    std::stack<llvm::BasicBlock*> loop_end_block = {};
+    std::stack<llvm::BasicBlock*> loop_condition_block = {};
     Enviornment(std::shared_ptr<Enviornment> parent = nullptr, std::unordered_map<std::string, std::shared_ptr<Record>> records = {},
                 std::string name = "unnamed")
         : parent(parent), name(name), record_map(records) {};

@@ -1,10 +1,10 @@
 def main() -> int {
-    f: bool = True;
-    x: bool = False;
-    if (f or x) {
-        return 1;
-    } else {
-        return 0;
+    f: int = 0;
+    while (f < 10) {
+        while (f < 5) {
+            f = f + 1;
+        }
+        break;
     }
-    return 0;
+    return f;
 }

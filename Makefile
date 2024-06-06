@@ -1,11 +1,11 @@
 
 run:
 	@echo ---------------------------------------------------------
-	./build/gigly.exe ./test/testscipt.gc
+	./build/gigly.exe -f ./test/testscipt.gc -o ./dump/testscipt.o 
 
 rund:
 	@echo ---------------------------------------------------------
-	./build/Debug/gigly.exe ./test/testscipt.gc
+	./build/Debug/gigly.exe -f ./test/testscipt.gc -o ./dump/testscipt.o
 
 # compiler = cl
 # exec = ./build/gigly.exe

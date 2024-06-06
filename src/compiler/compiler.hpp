@@ -7,7 +7,13 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
+#include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/TargetParser/Host.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -46,6 +52,7 @@ class Compiler {
     std::tuple<llvm::Value*, llvm::Type*> _visitCallExpression(std::shared_ptr<AST::CallExpression>);
     void _visitReturnStatement(std::shared_ptr<AST::ReturnStatement> return_statement);
     void _visitBlockStatement(std::shared_ptr<AST::BlockStatement> block_statement);
+    void _visitWhileStatement(std::shared_ptr<AST::WhileStatement> while_statement);
 
     std::tuple<llvm::Value*, llvm::Type*> _resolveValue(std::shared_ptr<AST::Node> node);
 };

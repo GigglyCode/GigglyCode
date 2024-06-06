@@ -83,34 +83,34 @@ void errors::Error::raise(bool terminate) {
     }
 }
 
-// void errors::NoPrefixParseFnError::raise(bool terminate) {
-//     std::cerr << "\n\n\033[1;35m" << std::string(60, '=') << "\033[0m\n\n";
-//     // Print error message in red color
-//     std::cerr << "\033[1;31m"
-//               << "NoPrefixParseFnError: \033[0m"
-//               << "\033[1;97m" << message << "\033[0m\n";
-//     std::cerr << "\033[1;36mSource Context:\033[0m\n";
-//     LineIterator lineIterator(source, token.line_no, token.line_no);
-//     int c_line = token.line_no;
-//     if(token.line_no > 1) {
-//         std::cerr << "\033[0;32m" << token.line_no - 1 << " | \033[0m" << lineIterator.get_before_start_line();
-//     }
-//     while(lineIterator.has_next()) {
-//         // Print line number in bold blue and source content in white
-//         std::cerr << "\033[0;32m" << c_line << " | \033[0m" << lineIterator.next() << "\n";
-//         c_line++;
-//     }
-//     if(token.line_no < getNumberOfLines(source)) {
-//         std::cerr << "\033[0;32m" << token.line_no + 1 << " | \033[0m" << lineIterator.get_after_end_line();
-//     }
-//     //  Print suggested fix if it's not empty
-//     if(!suggestedFix.empty()) {
-//         std::cerr << "\033[1;33m"
-//                   << "Suggested fix: " << suggestedFix << "\033[0m\n\n";
-//     }
-//     if(terminate)
-//         exit(EXIT_FAILURE);
-// }
+void errors::NoPrefixParseFnError::raise(bool terminate) {
+    std::cerr << "\n\n\033[1;35m" << std::string(60, '=') << "\033[0m\n\n";
+    // Print error message in red color
+    std::cerr << "\033[1;31m"
+              << "NoPrefixParseFnError: \033[0m"
+              << "\033[1;97m" << message << "\033[0m\n";
+    std::cerr << "\033[1;36mSource Context:\033[0m\n";
+    LineIterator lineIterator(source, token.line_no, token.line_no);
+    int c_line = token.line_no;
+    if(token.line_no > 1) {
+        std::cerr << "\033[0;32m" << token.line_no - 1 << " | \033[0m" << lineIterator.get_before_start_line();
+    }
+    while(lineIterator.has_next()) {
+        // Print line number in bold blue and source content in white
+        std::cerr << "\033[0;32m" << c_line << " | \033[0m" << lineIterator.next() << "\n";
+        c_line++;
+    }
+    if(token.line_no < getNumberOfLines(source)) {
+        std::cerr << "\033[0;32m" << token.line_no + 1 << " | \033[0m" << lineIterator.get_after_end_line();
+    }
+    //  Print suggested fix if it's not empty
+    if(!suggestedFix.empty()) {
+        std::cerr << "\033[1;33m"
+                  << "Suggested fix: " << suggestedFix << "\033[0m\n\n";
+    }
+    if(terminate)
+        exit(EXIT_FAILURE);
+}
 
 void errors::SyntaxError::raise(bool terminate) {
     const std::string banner = std::string(30, '=') + " Syntax Error " + std::string(30, '=');

@@ -3,8 +3,7 @@
 #include "parser/parser.hpp"
 #include <fstream>
 #include <iostream>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/raw_ostream.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <string>
 
 
@@ -17,12 +16,36 @@
 
 int main(int argc, char* argv[]) {
     // Reading code
-    if(argc != 2)
+    if(argc != 5) {
+        std::cout << "Invalid number of arguments. Usage: exe -f <file> -o <output>" << std::endl;
         return 1;
+    }
 
-    std::ifstream file(argv[1]);
-    if(!file)
+    std::string input_file;
+    std::string output_file;
+
+    for(int i = 1; i < argc; i += 2) {
+        std::string arg = argv[i];
+        if(arg == "-f") {
+            input_file = argv[i + 1];
+        } else if(arg == "-o") {
+            output_file = argv[i + 1];
+        } else {
+            std::cout << "Invalid argument: " << arg << std::endl;
+            return 1;
+        }
+    }
+
+    if(input_file.empty() || output_file.empty()) {
+        std::cout << "Input file or output file not provided." << std::endl;
         return 1;
+    }
+
+    std::ifstream file(input_file);
+    if(!file) {
+        std::cout << "Unable to open input file: " << input_file << std::endl;
+        return 1;
+    }
 
     std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     // Lexer
@@ -92,7 +115,34 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
+
     compiler::Compiler c(file_content);
+    // // Setting Up all The Target Triple and Data Layout
+    // auto TargetTriple = llvm::sys::getDefaultTargetTriple();
+    // // auto TargetTriple = "x86-pc-windows-msvc";
+    // llvm::InitializeAllTargetInfos();
+    // llvm::InitializeAllTargets();
+    // llvm::InitializeAllTargetMCs();
+    // llvm::InitializeAllAsmParsers();
+    // llvm::InitializeAllAsmPrinters();
+    // std::string Error;
+    // auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
+    // auto CPU = "generic";
+    // auto Features = "";
+
+    // llvm::TargetOptions opt;
+    // auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, llvm::Reloc::PIC_);
+
+    // // Print an error and exit if we couldn't find the requested target.
+    // // This generally occurs if we've forgotten to initialise the
+    // // TargetRegistry or we have a bogus target triple.
+    // if(!Target) {
+    //     llvm::errs() << Error;
+    //     return 1;
+    // }
+    // c.llvm_module->setDataLayout(TargetMachine->createDataLayout());
+    // c.llvm_module->setTargetTriple(TargetTriple);
+
     if(DEBUG_COMPILER) {
         std::cout << "=========== Compiler Debug ===========" << std::endl;
         c.compile(program);
@@ -106,5 +156,23 @@ int main(int argc, char* argv[]) {
         file.close();
         std::cout << "Compiler output dumped to " << DEBUG_COMPILER_OUTPUT_PATH << std::endl;
     }
+
+    // std::error_code EC;
+    // llvm::raw_fd_ostream dest(output_file, EC, llvm::sys::fs::OF_None);
+
+    // if(EC) {
+    //     llvm::errs() << "Could not open file: " << EC.message();
+    //     return 1;
+    // }
+
+    // llvm::legacy::PassManager pass;
+    // auto FileType = llvm::CodeGenFileType::ObjectFile;
+
+    // if(TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
+    //     llvm::errs() << "TargetMachine can't emit a file of this type";
+    //     return 1;
+    // }
+    // pass.run(*c.llvm_module);
+    // dest.flush();
     return 0;
 }

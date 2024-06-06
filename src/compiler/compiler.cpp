@@ -18,7 +18,27 @@ void compiler::Compiler::_initializeBuiltins() {
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("str", llvm::PointerType::get(llvm::Type::getInt8Ty(llvm_context), 0)));
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("void", llvm::Type::getVoidTy(llvm_context)));
     this->enviornment.add(std::make_shared<enviornment::RecordBuiltinType>("None", this->enviornment.get_builtin_type("void")));
-    
+
+    // Creating puts function for printing strings from the libc
+    std::vector<llvm::Type*> puts_args = {llvm::PointerType::get(llvm::Type::getInt8Ty(llvm_context), 0)};
+    llvm::FunctionType* puts_type = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), puts_args, false);
+    llvm::Function::Create(puts_type, llvm::Function::ExternalLinkage, "puts", this->llvm_module.get());
+
+    // Creating print function for printing strings which uses the puts under the hood
+    std::vector<llvm::Type*> print_args = {llvm::PointerType::get(llvm::Type::getInt8Ty(llvm_context), 0)};
+    llvm::FunctionType* print_type = llvm::FunctionType::get(this->enviornment.get_builtin_type("void"), print_args, false);
+    llvm::Function::Create(print_type, llvm::Function::ExternalLinkage, "print", this->llvm_module.get());
+    this->llvm_ir_builder.SetInsertPoint(llvm::BasicBlock::Create(llvm_context, "entry", this->llvm_module->getFunction("print")));
+    auto* arg = this->llvm_module->getFunction("print")->arg_begin();
+    auto record = std::make_shared<enviornment::RecordVariable>(std::string(arg->getName()), nullptr, arg->getType(), nullptr);
+    std::vector<std::tuple<std::string, std::shared_ptr<enviornment::RecordVariable>>> arguments = {
+        std::make_tuple(std::string(arg->getName()), record)};
+    this->llvm_ir_builder.CreateCall(this->llvm_module->getFunction("puts"), this->llvm_ir_builder.GetInsertBlock()->getParent()->arg_begin(),
+                                     "calltmp");
+    this->llvm_ir_builder.CreateRetVoid();
+    this->llvm_ir_builder.ClearInsertionPoint();
+    this->enviornment.add(std::make_shared<enviornment::RecordFunction>("print", this->llvm_module->getFunction("print"), print_type, arguments));
+
     // Create the global variable 'true'
     llvm::GlobalVariable* globalTrue =
         new llvm::GlobalVariable(*this->llvm_module, this->enviornment.get_builtin_type("bool"), true, llvm::GlobalValue::ExternalLinkage,
@@ -73,6 +93,26 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
     }
     case AST::NodeType::ReturnStatement: {
         this->_visitReturnStatement(std::static_pointer_cast<AST::ReturnStatement>(node));
+        break;
+    }
+    case AST::NodeType::WhileStatement: {
+        this->_visitWhileStatement(std::static_pointer_cast<AST::WhileStatement>(node));
+        break;
+    }
+    case AST::NodeType::BreakStatement: {
+        if(this->enviornment.loop_end_block.empty()) {
+            // errors::BreakOutsideLoopError(this->source, node->meta_data, "Break statement outside loop").raise();
+            std::cout << "Break statement outside loop" << std::endl;
+        }
+        this->llvm_ir_builder.CreateBr(this->enviornment.loop_end_block.top());
+        break;
+    }
+    case AST::NodeType::ContinueStatement: {
+        if(this->enviornment.loop_condition_block.empty()) {
+            // errors::ContinueOutsideLoopError(this->source, node->meta_data, "Continue statement outside loop").raise();
+            std::cout << "Continue statement outside loop" << std::endl;
+        }
+        this->llvm_ir_builder.CreateBr(this->enviornment.loop_condition_block.top());
         break;
     }
     case AST::NodeType::BooleanLiteral: {
@@ -353,7 +393,9 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_visitCallExpression(s
     }
     if(this->enviornment.is_function(name)) {
         auto func_record = this->enviornment.get_function(name);
-        auto returnValue = this->llvm_ir_builder.CreateCall(llvm::cast<llvm::Function>(func_record->function), args, "calltmp");
+        auto returnValue = this->llvm_ir_builder.CreateCall(
+            llvm::cast<llvm::Function>(func_record->function), args,
+            func_record->function_type->getReturnType() != this->enviornment.get_builtin_type("void") ? "calltmp" : "");
         return {returnValue, func_record->function_type};
     }
     errors::UndefinedFunctionError(this->source, call_expression->meta_data, "Function `" + name + "` not defined", "Define the function first")
@@ -366,6 +408,29 @@ void compiler::Compiler::_visitReturnStatement(std::shared_ptr<AST::ReturnStatem
     auto value = return_statement->value;
     auto [return_value, return_type] = this->_resolveValue(value);
     this->llvm_ir_builder.CreateRet(return_value);
+};
+
+void compiler::Compiler::_visitWhileStatement(std::shared_ptr<AST::WhileStatement> while_statement) {
+    auto condition = while_statement->condition;
+    auto body = while_statement->body;
+    auto func = this->llvm_ir_builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock* CondBB = llvm::BasicBlock::Create(llvm_context, "cond", func);
+    llvm::BasicBlock* BodyBB = llvm::BasicBlock::Create(llvm_context, "body", func);
+    llvm::BasicBlock* ContBB = llvm::BasicBlock::Create(llvm_context, "cont", func);
+    this->llvm_ir_builder.CreateBr(CondBB);
+    this->llvm_ir_builder.SetInsertPoint(CondBB);
+    auto [condition_val, _] = this->_resolveValue(condition);
+    this->llvm_ir_builder.CreateCondBr(condition_val, BodyBB, ContBB);
+    this->llvm_ir_builder.SetInsertPoint(BodyBB);
+    this->enviornment.loop_body_block.push(BodyBB);
+    this->enviornment.loop_end_block.push(ContBB);
+    this->enviornment.loop_condition_block.push(CondBB);
+    this->compile(body);
+    this->enviornment.loop_body_block.pop();
+    this->enviornment.loop_end_block.pop();
+    this->enviornment.loop_condition_block.pop();
+    this->llvm_ir_builder.CreateBr(CondBB);
+    this->llvm_ir_builder.SetInsertPoint(ContBB);
 };
 
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::shared_ptr<AST::Node> node) {

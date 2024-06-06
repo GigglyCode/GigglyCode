@@ -87,14 +87,14 @@ class UnsupportedOperationError : public Error {
     void raise(bool terminate = true) override;
 };
 
-// class NoPrefixParseFnError : public Error {
-//   public:
-//     token::Token token;
-//     NoPrefixParseFnError(const std::string& source, const token::Token& token, const std::string& message = "", const std::string& suggestedFix =
-//     "")
-//         : Error(source, -1, -1, message, suggestedFix), token(token) {}
-//     void raise(bool terminate = true) override;
-// };
+class NoPrefixParseFnError : public Error {
+  public:
+    token::Token token;
+    NoPrefixParseFnError(const std::string& source, const token::Token& token, const std::string& message = "", const std::string& suggestedFix =
+    "")
+        : Error(source, -1, -1, message, suggestedFix), token(token) {}
+    void raise(bool terminate = true) override;
+};
 
 void raiseSyntaxError(const std::string& source, const token::Token& token, const std::string& message, const std::string& suggestedFix);
 } // namespace errors
