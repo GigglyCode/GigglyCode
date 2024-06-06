@@ -116,6 +116,9 @@ class Parser {
     std::shared_ptr<AST::Expression> _parseFunctionCall();
     std::shared_ptr<AST::BlockStatement> _parseBlockStatement();
     std::shared_ptr<AST::Statement> _parseIfElseStatement();
+    std::shared_ptr<AST::WhileStatement> _parseWhileStatement();
+    std::shared_ptr<AST::BreakStatement> _parseBreakStatement();
+    std::shared_ptr<AST::ContinueStatement> _parseContinueStatement();
 
     std::shared_ptr<AST::BaseType> _parseType();
 

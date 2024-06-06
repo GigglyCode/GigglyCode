@@ -22,6 +22,9 @@ enum class NodeType {
     BlockStatement,
     ReturnStatement,
     IfElseStatement,
+    WhileStatement,
+    BreakStatement,
+    ContinueStatement,
 
     // Types
     Type,
@@ -153,6 +156,27 @@ class IfElseStatement : public Statement {
                            std::shared_ptr<Statement> alternative = nullptr)
         : condition(condition), consequence(consequence), alternative(alternative) {}
     inline NodeType type() override { return NodeType::IfElseStatement; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
+class WhileStatement : public Statement {
+  public:
+    std::shared_ptr<Expression> condition;
+    std::shared_ptr<Statement> body;
+    inline WhileStatement(std::shared_ptr<Expression> condition, std::shared_ptr<Statement> body) : condition(condition), body(body) {}
+    inline NodeType type() override { return NodeType::WhileStatement; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
+class BreakStatement : public Statement {
+  public:
+    inline NodeType type() override { return NodeType::BreakStatement; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
+class ContinueStatement : public Statement {
+  public:
+    inline NodeType type() override { return NodeType::ContinueStatement; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
 

@@ -42,6 +42,12 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseStatement() {
         return this->_parseFunctionStatement();
     } else if(this->_currentTokenIs(token::TokenType::If)) {
         return this->_parseIfElseStatement();
+    } else if(this->_currentTokenIs(token::TokenType::While)) {
+        return this->_parseWhileStatement();
+    } else if(this->_currentTokenIs(token::TokenType::Break)) {
+        return this->_parseBreakStatement();
+    } else if(this->_currentTokenIs(token::TokenType::Continue)) {
+        return this->_parseContinueStatement();
     } else
         return this->_parseExpressionStatement();
 }
@@ -97,6 +103,48 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
     auto function_statement = std::make_shared<AST::FunctionStatement>(name, parameters, returnType, body);
     function_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
     return function_statement;
+}
+
+std::shared_ptr<AST::WhileStatement> parser::Parser::_parseWhileStatement() {
+    int st_line_no = current_token->line_no;
+    int st_col_no = current_token->col_no;
+    if(!this->_expectPeek(token::TokenType::LeftParen)) {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto condition = this->_parseExpression(PrecedenceType::LOWEST);
+    if(!this->_expectPeek(token::TokenType::RightParen)) {
+        return nullptr;
+    }
+    this->_nextToken();
+    auto body = this->_parseStatement();
+    int end_line_no = current_token->line_no;
+    int end_col_no = current_token->col_no;
+    auto while_statement = std::make_shared<AST::WhileStatement>(condition, body);
+    while_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+    return while_statement;
+}
+
+std::shared_ptr<AST::BreakStatement> parser::Parser::_parseBreakStatement() {
+    int st_line_no = current_token->line_no;
+    int st_col_no = current_token->col_no;
+    this->_nextToken();
+    int end_line_no = current_token->line_no;
+    int end_col_no = current_token->col_no;
+    auto break_statement = std::make_shared<AST::BreakStatement>();
+    break_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+    return break_statement;
+}
+
+std::shared_ptr<AST::ContinueStatement> parser::Parser::_parseContinueStatement() {
+    int st_line_no = current_token->line_no;
+    int st_col_no = current_token->col_no;
+    this->_nextToken();
+    int end_line_no = current_token->line_no;
+    int end_col_no = current_token->col_no;
+    auto continue_statement = std::make_shared<AST::ContinueStatement>();
+    continue_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+    return continue_statement;
 }
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall() {
@@ -426,7 +474,7 @@ void parser::Parser::_peekError(token::TokenType type, token::TokenType expected
 }
 
 void parser::Parser::_noPrefixParseFnError(token::TokenType type) {
-    // std::shared_ptr<errors::NoPrefixParseFnError> error = std::make_shared<errors::NoPrefixParseFnError>(
-    //     this->lexer->source, *peek_token, "No prefix parse function for " + *token::tokenTypeString(type));
-    // this->errors.push_back(error);
+    std::shared_ptr<errors::NoPrefixParseFnError> error = std::make_shared<errors::NoPrefixParseFnError>(
+        this->lexer->source, *peek_token, "No prefix parse function for " + *token::tokenTypeString(type));
+    this->errors.push_back(error);
 }

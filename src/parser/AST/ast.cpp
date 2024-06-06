@@ -38,6 +38,12 @@ std::shared_ptr<std::string> AST::nodeTypeToString(NodeType type) {
         return std::make_shared<std::string>("BooleanLiteral");
     case NodeType::IfElseStatement:
         return std::make_shared<std::string>("IfElseStatement");
+    case NodeType::WhileStatement:
+        return std::make_shared<std::string>("WhileStatement");
+    case NodeType::BreakStatement:
+        return std::make_shared<std::string>("BreakStatement");
+    case NodeType::ContinueStatement:    
+        return std::make_shared<std::string>("ContinueStatement");
     default:
         return std::make_shared<std::string>("UNKNOWN");
     }
@@ -126,6 +132,26 @@ std::shared_ptr<nlohmann::json> AST::IfElseStatement::toJSON() {
     jsonAst["condition"] = *this->condition->toJSON();
     jsonAst["consequence"] = *this->consequence->toJSON();
     jsonAst["alternative"] = this->alternative == nullptr ? nullptr : *this->alternative->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::WhileStatement::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["condition"] = *this->condition->toJSON();
+    jsonAst["body"] = *this->body->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::BreakStatement::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::ContinueStatement::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 
