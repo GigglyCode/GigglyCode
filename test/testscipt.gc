@@ -1,10 +1,11 @@
-def main() -> int {
-    f: int = 0;
-    while (f < 10) {
-        while (f < 5) {
-            f = f + 1;
-        }
-        break;
-    }
-    return f;
+class this_class {
+    x_cod: int;
+    y_cod: int;
+#    def __init__(self: this_class, x: int, y: int) -> None {
+#        self.y_cod = y;
+#        self.x_cod = x;
+#    }
+#    def add(self: this_class) -> int {
+#        return self.x_cod + self.y_cod;
+#    }
 }

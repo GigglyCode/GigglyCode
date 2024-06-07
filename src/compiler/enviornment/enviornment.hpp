@@ -3,10 +3,10 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 #include <memory>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include <stack>
 
 
 namespace enviornment {
@@ -26,11 +26,6 @@ class Record {
     Record(RecordType type, std::string name) : type(type), name(name) {};
 }; // class Record
 
-class RecordClassType : public Record {
-  public:
-    RecordClassType(std::string name) : Record(RecordType::RecordClassType, name) {};
-};
-
 class RecordEnumType : public Record {
   public:
     RecordEnumType(std::string name) : Record(RecordType::RecordEnumType, name) {};
@@ -43,15 +38,7 @@ class RecordBuiltinType : public Record {
     RecordBuiltinType(std::string name, llvm::Type* type) : Record(RecordType::BuiltinType, name), type(type) {};
 };
 
-class RecordVariable : public Record {
-  public:
-    llvm::Value* value;
-    llvm::Type* type;
-    llvm::AllocaInst* allocainst;
-    RecordVariable(std::string name) : Record(RecordType::RecordVariable, name) {};
-    RecordVariable(std::string name, llvm::Value* value, llvm::Type* type, llvm::AllocaInst* allocainst)
-        : Record(RecordType::RecordVariable, name), value(value), type(type), allocainst(allocainst) {};
-};
+class RecordVariable;
 
 class RecordFunction : public Record {
   public:
@@ -62,6 +49,30 @@ class RecordFunction : public Record {
     RecordFunction(std::string name, llvm::Function* function, llvm::FunctionType* function_type,
                    std::vector<std::tuple<std::string, std::shared_ptr<RecordVariable>>> arguments)
         : Record(RecordType::RecordFunction, name), function(function), function_type(function_type), arguments(arguments) {};
+};
+
+class RecordClassType : public Record {
+  public:
+    llvm::StructType* type;
+    std::vector<std::string> variable_names;
+    std::unordered_map<std::string, std::shared_ptr<RecordFunction>> methods;
+    RecordClassType(std::string name) : Record(RecordType::RecordClassType, name) {};
+    RecordClassType(std::string name, llvm::StructType* type, std::vector<std::string> variable_names,
+                    std::unordered_map<std::string, std::shared_ptr<RecordFunction>> functions = {})
+        : Record(RecordType::RecordClassType, name), type(type), variable_names(variable_names) {};
+};
+
+class RecordVariable : public Record {
+  public:
+    llvm::Value* value;
+    llvm::Type* type;
+    llvm::AllocaInst* allocainst;
+    std::shared_ptr<RecordClassType> class_type;
+    RecordVariable(std::string name) : Record(RecordType::RecordVariable, name) {};
+    RecordVariable(std::string name, llvm::Value* value, llvm::Type* type, llvm::AllocaInst* allocainst)
+        : Record(RecordType::RecordVariable, name), value(value), type(type), allocainst(allocainst) {};
+    RecordVariable(std::string name, llvm::Value* value, llvm::Type* type, llvm::AllocaInst* allocainst, std::shared_ptr<RecordClassType> class_type)
+        : Record(RecordType::RecordClassType, name), value(value), type(type), allocainst(allocainst), class_type(class_type) {};
 };
 
 class Enviornment {

@@ -120,6 +120,10 @@ void compiler::Compiler::compile(std::shared_ptr<AST::Node> node) {
         auto value = llvm::ConstantInt::get(llvm_context, llvm::APInt(1, boolean_literal->value, true));
         break;
     }
+    case AST::NodeType::ClassDeclarationStatement: {
+        this->_visitClassDeclarationStatement(std::static_pointer_cast<AST::ClassDeclarationStatement>(node));
+        break;
+    }
     default:
         errors::InternalCompilationError("Unknown node type", this->source, node->meta_data.st_line_no, node->meta_data.end_line_no,
                                          "Unknown node type: " + *AST::nodeTypeToString(node->type()))
@@ -433,6 +437,26 @@ void compiler::Compiler::_visitWhileStatement(std::shared_ptr<AST::WhileStatemen
     this->llvm_ir_builder.SetInsertPoint(ContBB);
 };
 
+void compiler::Compiler::_visitClassDeclarationStatement(std::shared_ptr<AST::ClassDeclarationStatement> class_declaration) {
+    auto name = std::static_pointer_cast<AST::IdentifierLiteral>(class_declaration->name)->value;
+    auto variables = class_declaration->variables;
+    auto methods = class_declaration->methods;
+    std::vector<llvm::Type*> Elements;
+    std::vector<std::string> ElementNames;
+    for(auto var : variables) {
+        auto var_name = std::static_pointer_cast<AST::IdentifierLiteral>(var->name)->value;
+        auto var_type = this->enviornment.get_builtin_type(
+            std::dynamic_pointer_cast<AST::IdentifierLiteral>(std::dynamic_pointer_cast<AST::GenericType>(var->value_type)->name)->value);
+        Elements.push_back(var_type);
+        ElementNames.push_back(var_name);
+    }
+    llvm::StructType* MyStructType = llvm::StructType::create(this->llvm_context, Elements, name);
+    this->enviornment.add(std::make_shared<enviornment::RecordClassType>(name, MyStructType, ElementNames));
+    auto prev_env = std::make_shared<enviornment::Enviornment>(this->enviornment);
+    this->enviornment = enviornment::Enviornment(prev_env, {}, name);
+    this->enviornment.add(std::make_shared<enviornment::RecordClassType>(name, MyStructType, ElementNames));
+};
+
 std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::shared_ptr<AST::Node> node) {
     switch(node->type()) {
     case AST::NodeType::IntegerLiteral: {
@@ -480,6 +504,10 @@ std::tuple<llvm::Value*, llvm::Type*> compiler::Compiler::_resolveValue(std::sha
     case AST::NodeType::InfixedExpression: {
         auto infix_expression = std::static_pointer_cast<AST::InfixExpression>(node);
         return this->_visitInfixExpression(infix_expression);
+    }
+    case AST::NodeType::ClassDeclarationStatement: {
+        auto class_declaration = std::static_pointer_cast<AST::ClassDeclarationStatement>(node);
+        this->_visitClassDeclarationStatement(class_declaration);
     }
     default:
         errors::InternalCompilationError("Unknown node type", this->source, node->meta_data.st_line_no, node->meta_data.end_line_no,
