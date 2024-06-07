@@ -27,12 +27,15 @@ std::shared_ptr<AST::Program> parser::Parser::parseProgram() {
 
 std::shared_ptr<AST::Statement> parser::Parser::_parseStatement() {
     if(this->_currentTokenIs(token::TokenType::Identifier)) {
+        int st_line_no = current_token->line_no;
+        int st_col_no = current_token->col_no;
+        auto identifier = this->_parseIdentifier();
         if(this->_peekTokenIs(token::TokenType::Colon)) {
-            return this->_parseVariableDeclaration();
+            return this->_parseVariableDeclaration(identifier, st_line_no, st_col_no);
         } else if(this->_peekTokenIs(token::TokenType::Equals)) {
-            return this->_parseVariableAssignment();
-        } else {
-            return this->_parseExpressionStatement();
+            return this->_parseVariableAssignment(identifier, st_line_no, st_col_no);
+        }else {
+            return this->_parseExpressionStatement(identifier, st_line_no, st_col_no);
         }
     } else if(this->_currentTokenIs(token::TokenType::LeftBrace)) {
         return this->_parseBlockStatement();
@@ -48,6 +51,8 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseStatement() {
         return this->_parseBreakStatement();
     } else if(this->_currentTokenIs(token::TokenType::Continue)) {
         return this->_parseContinueStatement();
+    } else if(this->_currentTokenIs(token::TokenType::Class)) {
+        return this->_parseClassDeclarationStatement();
     } else
         return this->_parseExpressionStatement();
 }
@@ -147,11 +152,13 @@ std::shared_ptr<AST::ContinueStatement> parser::Parser::_parseContinueStatement(
     return continue_statement;
 }
 
-std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall() {
-    int st_line_no = current_token->line_no;
-    int st_col_no = current_token->col_no;
-    auto identifier = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
-    identifier->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
+std::shared_ptr<AST::Expression> parser::Parser::_parseFunctionCall(std::shared_ptr<AST::Expression> identifier, int st_line_no, int st_col_no) {
+    if (identifier == nullptr) {
+        st_line_no = current_token->line_no;
+        st_col_no = current_token->col_no;
+        identifier = _parseIdentifier();
+    }
+    identifier->set_meta_data(st_line_no, st_col_no, current_token->line_no, current_token->end_col_no);
     this->_nextToken();
     auto args = this->_parse_expression_list(token::TokenType::RightParen);
     int end_line_no = current_token->line_no;
@@ -213,10 +220,13 @@ std::shared_ptr<AST::BlockStatement> parser::Parser::_parseBlockStatement() {
     return block_statement;
 }
 
-std::shared_ptr<AST::ExpressionStatement> parser::Parser::_parseExpressionStatement() {
-    int st_line_no = current_token->line_no;
-    int st_col_no = current_token->col_no;
-    auto expr = this->_parseExpression(PrecedenceType::LOWEST);
+std::shared_ptr<AST::ExpressionStatement> parser::Parser::_parseExpressionStatement(std::shared_ptr<AST::Expression> identifier, int st_line_no, int st_col_no) {
+    if (identifier == nullptr) {
+        st_line_no = current_token->line_no;
+        st_col_no = current_token->col_no;
+        identifier = _parseIdentifier();
+    }
+    auto expr = this->_parseExpression(PrecedenceType::LOWEST, identifier, st_line_no, st_col_no);
     if(this->_peekTokenIs(token::TokenType::Semicolon)) {
         this->_nextToken();
     }
@@ -227,11 +237,15 @@ std::shared_ptr<AST::ExpressionStatement> parser::Parser::_parseExpressionStatem
     return stmt;
 }
 
-std::shared_ptr<AST::Statement> parser::Parser::_parseVariableDeclaration() {
-    int st_line_no = current_token->line_no;
-    int st_col_no = current_token->col_no;
-    auto identifier = _parseIdentifier();
-    this->_nextToken();
+std::shared_ptr<AST::Statement> parser::Parser::_parseVariableDeclaration(std::shared_ptr<AST::Expression> identifier, int st_line_no, int st_col_no) {
+    if (identifier == nullptr) {
+        st_line_no = current_token->line_no;
+        st_col_no = current_token->col_no;
+        identifier = _parseIdentifier();
+    }
+    if (!this->_expectPeek(token::TokenType::Colon)) {
+        return nullptr;
+    }
     this->_nextToken();
     auto type = this->_parseType();
     if(this->peek_token->type == token::TokenType::Semicolon) {
@@ -294,10 +308,12 @@ std::shared_ptr<AST::BaseType> parser::Parser::_parseType() {
     return generic_type_node;
 }
 
-std::shared_ptr<AST::Statement> parser::Parser::_parseVariableAssignment() {
-    int st_line_no = current_token->line_no;
-    int st_col_no = current_token->col_no;
-    auto identifier = _parseIdentifier();
+std::shared_ptr<AST::Statement> parser::Parser::_parseVariableAssignment(std::shared_ptr<AST::Expression> identifier, int st_line_no, int st_col_no) {
+    if (identifier == nullptr) {
+        st_line_no = current_token->line_no;
+        st_col_no = current_token->col_no;
+        identifier = _parseIdentifier();
+    }
     if(!this->_expectPeek(token::TokenType::Equals)) {
         return nullptr;
     }
@@ -311,16 +327,65 @@ std::shared_ptr<AST::Statement> parser::Parser::_parseVariableAssignment() {
     return stmt;
 }
 
-std::shared_ptr<AST::Expression> parser::Parser::_parseExpression(PrecedenceType precedence) {
+std::shared_ptr<AST::ClassDeclarationStatement> parser::Parser::_parseClassDeclarationStatement() {
     int st_line_no = current_token->line_no;
     int st_col_no = current_token->col_no;
+    if(!this->_expectPeek(token::TokenType::Identifier)) {
+        return nullptr;
+    }
+    auto name = std::make_shared<AST::IdentifierLiteral>(this->current_token->literal);
+    name->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
+    if(!this->_expectPeek(token::TokenType::LeftBrace)) {
+        return nullptr;
+    }
+    this->_nextToken();
+    std::vector<std::shared_ptr<AST::VariableDeclarationStatement>> variables;
+    std::vector<std::shared_ptr<AST::FunctionStatement>> methods;
+    while(this->current_token->type != token::TokenType::RightBrace && this->current_token->type != token::TokenType::EndOfFile) {
+        if(this->current_token->type == token::TokenType::Def) {
+            auto method = this->_parseFunctionStatement();
+            this->_nextToken();
+            if(method != nullptr) {
+                methods.push_back(std::dynamic_pointer_cast<AST::FunctionStatement>(method));
+            }
+            else {
+                std::cout << "Method is null" << std::endl;
+                break;
+            }
+        } else if(this->current_token->type == token::TokenType::Identifier) {
+            auto variable = this->_parseVariableDeclaration();
+            this->_nextToken();
+            if(variable != nullptr) {
+                variables.push_back(std::dynamic_pointer_cast<AST::VariableDeclarationStatement>(variable));
+            }
+            else {
+                std::cout << "Variable is null" << std::endl;
+                break;
+            }
+        } else {
+            std::cout << "Unexpected token: " << *token::tokenTypeString(this->current_token->type) << std::endl;
+            break;
+        }
+    }
+    int end_line_no = current_token->line_no;
+    int end_col_no = current_token->col_no;
+    auto class_declaration_statement = std::make_shared<AST::ClassDeclarationStatement>(name, variables, methods);
+    class_declaration_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
+    return class_declaration_statement;
+};
+
+std::shared_ptr<AST::Expression> parser::Parser::_parseExpression(PrecedenceType precedence, std::shared_ptr<AST::Expression> parsed_expression, int st_line_no, int st_col_no) {
+    if (parsed_expression == nullptr) {
+    st_line_no = current_token->line_no;
+    st_col_no = current_token->col_no;
     auto iter = prefix_parse_fns.find(current_token->type);
     if(iter == prefix_parse_fns.end()) {
         this->_noPrefixParseFnError(current_token->type);
         return nullptr;
     }
     auto prefix_fn = iter->second;
-    auto parsed_expression = prefix_fn();
+    parsed_expression = prefix_fn();
+    }
     while(!_peekTokenIs(token::TokenType::Semicolon) && precedence < _peekPrecedence()) {
         auto iter = infix_parse_Fns.find(peek_token->type);
         if(iter == infix_parse_Fns.end()) {
@@ -421,10 +486,20 @@ std::shared_ptr<AST::Expression> parser::Parser::_parseStringLiteral() {
 }
 
 std::shared_ptr<AST::Expression> parser::Parser::_parseIdentifier() {
-    if(this->_peekTokenIs(token::TokenType::LeftParen)) {
-        return this->_parseFunctionCall();
+    std::string identifier = current_token->literal;
+    int st_line_no = current_token->line_no;
+    int st_col_no = current_token->col_no;
+    while (_peekTokenIs(token::TokenType::Dot)) {
+        _nextToken();
+        if (!_expectPeek(token::TokenType::Identifier)) {
+            return nullptr;
+        }
+        identifier += "." + current_token->literal;
     }
-    auto expr = std::make_shared<AST::IdentifierLiteral>(current_token->literal);
+    if (_peekTokenIs(token::TokenType::LeftParen)) {
+        return _parseFunctionCall(std::make_shared<AST::IdentifierLiteral>(identifier), st_line_no, st_col_no);
+    }
+    auto expr = std::make_shared<AST::IdentifierLiteral>(identifier);
     expr->set_meta_data(current_token->line_no, current_token->col_no, current_token->line_no, current_token->end_col_no);
     return expr;
 }

@@ -39,6 +39,8 @@ token::TokenType Lexer::_lookupIdent(std::shared_ptr<std::string> ident) {
         return token::TokenType::Break;
     } else if(*ident == "continue") {
         return token::TokenType::Continue;
+    } else if(*ident == "class") {
+        return token::TokenType::Class;
     } else if(*ident == "True") {
         return token::TokenType::True;
     } else if(*ident == "False") {

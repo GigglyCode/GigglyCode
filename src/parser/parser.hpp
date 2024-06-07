@@ -108,21 +108,22 @@ class Parser {
     PrecedenceType _peekPrecedence();
     std::shared_ptr<AST::Statement> _parseStatement();
 
-    std::shared_ptr<AST::ExpressionStatement> _parseExpressionStatement();
-    std::shared_ptr<AST::Statement> _parseVariableDeclaration();
-    std::shared_ptr<AST::Statement> _parseVariableAssignment();
+    std::shared_ptr<AST::ExpressionStatement> _parseExpressionStatement(std::shared_ptr<AST::Expression> identifier = nullptr, int st_line_no = -1, int st_col_no = -1);
+    std::shared_ptr<AST::Statement> _parseVariableDeclaration(std::shared_ptr<AST::Expression> identifier = nullptr, int st_line_no = -1, int st_col_no = -1);
+    std::shared_ptr<AST::Statement> _parseVariableAssignment(std::shared_ptr<AST::Expression> identifier = nullptr, int st_line_no = -1, int st_col_no = -1);
     std::shared_ptr<AST::ReturnStatement> _parseReturnStatement();
     std::shared_ptr<AST::FunctionStatement> _parseFunctionStatement();
-    std::shared_ptr<AST::Expression> _parseFunctionCall();
+    std::shared_ptr<AST::Expression> _parseFunctionCall(std::shared_ptr<AST::Expression> identifier = nullptr, int st_line_no = -1, int st_col_no = -1);
     std::shared_ptr<AST::BlockStatement> _parseBlockStatement();
     std::shared_ptr<AST::Statement> _parseIfElseStatement();
     std::shared_ptr<AST::WhileStatement> _parseWhileStatement();
     std::shared_ptr<AST::BreakStatement> _parseBreakStatement();
     std::shared_ptr<AST::ContinueStatement> _parseContinueStatement();
+    std::shared_ptr<AST::ClassDeclarationStatement> _parseClassDeclarationStatement();
 
     std::shared_ptr<AST::BaseType> _parseType();
 
-    std::shared_ptr<AST::Expression> _parseExpression(PrecedenceType precedence);
+    std::shared_ptr<AST::Expression> _parseExpression(PrecedenceType precedence, std::shared_ptr<AST::Expression> leftNode = nullptr, int st_line_no = -1, int st_col_no = -1);
 
     std::shared_ptr<AST::Expression> _parseIntegerLiteral();
     std::shared_ptr<AST::Expression> _parseFloatLiteral();

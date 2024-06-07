@@ -44,6 +44,8 @@ std::shared_ptr<std::string> AST::nodeTypeToString(NodeType type) {
         return std::make_shared<std::string>("BreakStatement");
     case NodeType::ContinueStatement:    
         return std::make_shared<std::string>("ContinueStatement");
+    case NodeType::ClassDeclarationStatement:
+        return std::make_shared<std::string>("ClassDeclarationStatement");
     default:
         return std::make_shared<std::string>("UNKNOWN");
     }
@@ -169,6 +171,21 @@ std::shared_ptr<nlohmann::json> AST::VariableAssignmentStatement::toJSON() {
     jsonAst["type"] = *nodeTypeToString(this->type());
     jsonAst["identifier"] = *this->name->toJSON();
     jsonAst["value"] = *value->toJSON();
+    return std::make_shared<nlohmann::json>(jsonAst);
+}
+
+std::shared_ptr<nlohmann::json> AST::ClassDeclarationStatement::toJSON() {
+    auto jsonAst = nlohmann::json();
+    jsonAst["type"] = *nodeTypeToString(this->type());
+    jsonAst["name"] = *this->name->toJSON();
+    jsonAst["variables"] = nlohmann::json::array();
+    for(auto& var : this->variables) {
+        jsonAst["variables"].push_back(*var->toJSON());
+    }
+    jsonAst["methods"] = nlohmann::json::array();
+    for(auto& method : this->methods) {
+        jsonAst["methods"].push_back(*method->toJSON());
+    }
     return std::make_shared<nlohmann::json>(jsonAst);
 }
 

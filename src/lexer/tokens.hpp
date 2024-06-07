@@ -88,6 +88,7 @@ enum class TokenType {
     In,       // In Statement in
     Break,    // Break Statement break
     Continue, // Continue Statement continue
+    Class,    // Class
     True,     // Boolean true true
     False,    // Boolean false false
     // Maybe,    // Maybe type maybe

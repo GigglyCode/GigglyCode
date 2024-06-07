@@ -25,6 +25,7 @@ enum class NodeType {
     WhileStatement,
     BreakStatement,
     ContinueStatement,
+    ClassDeclarationStatement,
 
     // Types
     Type,
@@ -197,6 +198,18 @@ class VariableAssignmentStatement : public Statement {
     std::shared_ptr<Expression> value;
     inline VariableAssignmentStatement(std::shared_ptr<Expression> name, std::shared_ptr<Expression> value) : name(name), value(value) {}
     inline NodeType type() override { return NodeType::VariableAssignmentStatement; };
+    std::shared_ptr<nlohmann::json> toJSON() override;
+};
+
+class ClassDeclarationStatement : public Statement {
+  public:
+    std::shared_ptr<Expression> name;
+    std::vector<std::shared_ptr<VariableDeclarationStatement>> variables;
+    std::vector<std::shared_ptr<FunctionStatement>> methods;
+    inline ClassDeclarationStatement(std::shared_ptr<Expression> name, std::vector<std::shared_ptr<VariableDeclarationStatement>> variables,
+                                     std::vector<std::shared_ptr<FunctionStatement>> methods)
+        : name(name), variables(variables), methods(methods) {}
+    inline NodeType type() override { return NodeType::ClassDeclarationStatement; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };
 

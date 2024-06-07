@@ -174,6 +174,8 @@ std::shared_ptr<std::string> token::tokenTypeString(TokenType type) {
         return std::make_shared<std::string>("Break");
     case TokenType::Continue:
         return std::make_shared<std::string>("Continue");
+    case TokenType::Class:
+        return std::make_shared<std::string>("Class");
     case TokenType::True:
         return std::make_shared<std::string>("True");
     case TokenType::False:
