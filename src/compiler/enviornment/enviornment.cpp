@@ -22,27 +22,6 @@ bool enviornment::Enviornment::contains(std::string name, bool limit2current_sco
     }
 };
 
-bool enviornment::Enviornment::is_builtin_type(std::string name, bool limit2current_scope) {
-    if(record_map.find(name) != record_map.end()) {
-        return record_map[name]->type == RecordType::BuiltinType;
-    } else if(parent != nullptr & !limit2current_scope) {
-        return parent->is_builtin_type(name);
-    } else {
-        return false;
-    }
-};
-
-llvm::Type* enviornment::Enviornment::get_builtin_type(std::string name, bool limit2current_scope) {
-    if(record_map.find(name) != record_map.end()) {
-        if(record_map[name]->type == RecordType::BuiltinType) {
-            return std::static_pointer_cast<enviornment::RecordBuiltinType>(record_map[name])->type;
-        }
-    } else if(parent != nullptr & !limit2current_scope) {
-        return parent->get_builtin_type(name);
-    }
-    return nullptr;
-};
-
 bool enviornment::Enviornment::is_variable(std::string name, bool limit2current_scope) {
     if(record_map.find(name) != record_map.end()) {
         return record_map[name]->type == RecordType::RecordVariable;
@@ -66,15 +45,6 @@ bool enviornment::Enviornment::is_class(std::string name, bool limit2current_sco
         return record_map[name]->type == RecordType::RecordClassType;
     } else if(parent != nullptr & !limit2current_scope) {
         return parent->is_class(name);
-    } else {
-        return false;
-    }
-};
-bool enviornment::Enviornment::is_enum(std::string name, bool limit2current_scope) {
-    if(record_map.find(name) != record_map.end()) {
-        return record_map[name]->type == RecordType::RecordEnumType;
-    } else if(parent != nullptr & !limit2current_scope) {
-        return parent->is_enum(name);
     } else {
         return false;
     }
@@ -109,17 +79,6 @@ std::shared_ptr<enviornment::RecordClassType> enviornment::Enviornment::get_clas
         }
     } else if(parent != nullptr & !limit2current_scope) {
         return parent->get_class(name);
-    }
-    return nullptr;
-};
-
-std::shared_ptr<enviornment::RecordEnumType> enviornment::Enviornment::get_enum(std::string name, bool limit2current_scope) {
-    if(record_map.find(name) != record_map.end()) {
-        if(record_map[name]->type == RecordType::RecordEnumType) {
-            return std::static_pointer_cast<enviornment::RecordEnumType>(record_map[name]);
-        }
-    } else if(parent != nullptr & !limit2current_scope) {
-        return parent->get_enum(name);
     }
     return nullptr;
 };
