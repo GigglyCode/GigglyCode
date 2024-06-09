@@ -98,14 +98,14 @@ std::shared_ptr<AST::FunctionStatement> parser::Parser::_parseFunctionStatement(
         return nullptr;
     }
     this->_nextToken();
-    auto returnType = this->_parseType();
+    auto return_type = this->_parseType();
     if(!this->_expectPeek(token::TokenType::LeftBrace)) {
         return nullptr;
     }
     auto body = this->_parseBlockStatement();
     int end_line_no = current_token->line_no;
     int end_col_no = current_token->col_no;
-    auto function_statement = std::make_shared<AST::FunctionStatement>(name, parameters, returnType, body);
+    auto function_statement = std::make_shared<AST::FunctionStatement>(name, parameters, return_type, body);
     function_statement->set_meta_data(st_line_no, st_col_no, end_line_no, end_col_no);
     return function_statement;
 }

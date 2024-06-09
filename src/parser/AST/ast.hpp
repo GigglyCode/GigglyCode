@@ -129,11 +129,11 @@ class FunctionStatement : public Statement {
   public:
     std::shared_ptr<Expression> name;
     std::vector<std::shared_ptr<FunctionParameter>> parameters;
-    std::shared_ptr<BaseType> returnType;
+    std::shared_ptr<BaseType> return_type;
     std::shared_ptr<BlockStatement> body;
     inline FunctionStatement(std::shared_ptr<Expression> name, std::vector<std::shared_ptr<FunctionParameter>> parameters,
-                             std::shared_ptr<BaseType> returnType, std::shared_ptr<BlockStatement> body)
-        : name(name), parameters(parameters), returnType(returnType), body(body) {}
+                             std::shared_ptr<BaseType> return_type, std::shared_ptr<BlockStatement> body)
+        : name(name), parameters(parameters), return_type(return_type), body(body) {}
     inline NodeType type() override { return NodeType::FunctionStatement; };
     std::shared_ptr<nlohmann::json> toJSON() override;
 };

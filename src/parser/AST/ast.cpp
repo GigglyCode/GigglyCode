@@ -104,7 +104,7 @@ std::shared_ptr<nlohmann::json> AST::FunctionStatement::toJSON() {
     for(auto& param : this->parameters) {
         jsonAst["parameters"].push_back(*param->toJSON());
     }
-    jsonAst["return_type"] = *this->returnType->toJSON();
+    jsonAst["return_type"] = *this->return_type->toJSON();
     jsonAst["body"] = *this->body->toJSON();
     return std::make_shared<nlohmann::json>(jsonAst);
 }
